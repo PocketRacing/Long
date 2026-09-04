@@ -1,1198 +1,2923 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>The Long Dark — Mystery Lake</title>
+
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1215;color:#e8ecec;font-family:Arial,sans-serif}
-button,input{font:inherit}
-#app{height:100%;display:flex;flex-direction:column}
-#top{
- height:58px;background:#10171b;border-bottom:1px solid #354047;
- display:flex;align-items:center;gap:18px;padding:0 14px;z-index:5
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
-.logo{font-weight:800;letter-spacing:1px;white-space:nowrap}
-.info{font-size:12px;color:#b9c2c5;display:flex;gap:14px;flex-wrap:wrap}
-#game{position:relative;flex:1;min-height:0;background:#151b1e}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-#hud{
- position:absolute;right:12px;top:12px;width:245px;
- background:rgba(12,17,19,.91);border:1px solid #39464c;
- padding:12px;border-radius:8px;backdrop-filter:blur(5px)
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111416;
+  color:#ddd;
+  font-family:Georgia,"Times New Roman",serif;
 }
-.hrow{margin:8px 0}
-.hlabel{display:flex;justify-content:space-between;font-size:11px;color:#c5ccce;margin-bottom:3px}
-.bar{height:7px;background:#252e32;border-radius:4px;overflow:hidden}
-.fill{height:100%;width:50%;background:#d4dadb}
-.warn{background:#b8a26b}
-.bad{background:#a35e5e}
-.good{background:#829a82}
-#actions{
- position:absolute;left:12px;bottom:76px;width:270px;
- background:rgba(12,17,19,.9);border:1px solid #39464c;border-radius:8px;
- padding:10px
-}
-#actions h3{font-size:12px;margin:0 0 8px;color:#dce2e3}
-.actionGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
 button{
- background:#20292d;color:#e2e7e8;border:1px solid #46535a;
- border-radius:5px;padding:8px;cursor:pointer
+  font:inherit;
+  color:inherit;
+  border:0;
+  cursor:pointer;
 }
-button:hover{background:#2b373c}
-button:disabled{opacity:.4;cursor:not-allowed}
-#log{
- position:absolute;left:50%;transform:translateX(-50%);
- bottom:12px;width:min(650px,calc(100% - 330px));
- background:rgba(10,14,16,.87);border:1px solid #364249;
- border-radius:7px;padding:8px 11px;font-size:12px;color:#d4dadc;
- min-height:36px;pointer-events:none
+
+#app{
+  width:100%;
+  height:100%;
+  position:relative;
+  overflow:hidden;
+  background:#111416;
 }
-#command{
- position:absolute;left:50%;transform:translateX(-50%);
- bottom:55px;width:min(650px,calc(100% - 330px));
- display:flex;gap:5px
-}
-#command input{
- flex:1;min-width:0;background:rgba(10,14,16,.94);
- border:1px solid #435057;color:white;padding:9px;border-radius:5px;outline:none
-}
-#mobile{
- display:none;position:absolute;left:14px;bottom:15px;width:150px;height:150px
-}
-.dpad{
- position:absolute;width:48px;height:48px;border-radius:50%;
- background:rgba(15,21,23,.8);border:1px solid #536067;color:#fff
-}
-#up{left:51px;top:0}#down{left:51px;bottom:0}
-#left{left:0;top:51px}#right{right:0;top:51px}
+
+/* =========================
+   MAIN MENU
+========================= */
+
 #menu{
- position:absolute;right:12px;bottom:12px;display:flex;gap:5px
+  position:absolute;
+  inset:0;
+  z-index:50;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(120,105,80,.25),transparent 38%),
+    linear-gradient(#17191a,#353432 55%,#151718);
 }
-.modal{
- position:absolute;inset:0;background:rgba(4,7,8,.74);display:none;
- align-items:center;justify-content:center;z-index:20
+
+#menu:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.28;
+  background:
+    linear-gradient(175deg,transparent 30%,#6d6252 31%,transparent 33%),
+    linear-gradient(185deg,transparent 55%,#817765 56%,transparent 59%),
+    repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,255,255,.025) 6px);
 }
+
+.menu-character{
+  position:absolute;
+  left:-35px;
+  bottom:-30px;
+  width:42vw;
+  max-width:360px;
+  height:52vh;
+  min-height:300px;
+  background:
+    radial-gradient(ellipse at 45% 55%,#6b725f 0 20%,transparent 21%),
+    linear-gradient(135deg,#343c36,#151b1b);
+  clip-path:polygon(0 20%,35% 8%,65% 35%,90% 100%,0 100%);
+  opacity:.75;
+}
+
+.menu-character.right{
+  left:auto;
+  right:-55px;
+  transform:scaleX(-1);
+  opacity:.38;
+}
+
+.menu-content{
+  position:relative;
+  z-index:2;
+  width:min(390px,88vw);
+  text-align:center;
+  margin-top:-30px;
+}
+
+.game-logo{
+  font-size:clamp(42px,12vw,78px);
+  line-height:.8;
+  font-weight:900;
+  letter-spacing:-5px;
+  color:#c6a84b;
+  text-shadow:
+    3px 3px #25211b,
+    -2px -2px #74623a,
+    0 8px 20px #000;
+  transform:rotate(-2deg);
+  margin-bottom:24px;
+}
+
+.logo-sub{
+  color:#aaa18b;
+  font-size:13px;
+  letter-spacing:5px;
+  margin-bottom:28px;
+}
+
+.menu-button{
+  display:block;
+  width:100%;
+  min-height:65px;
+  margin:13px 0;
+  padding:10px 20px;
+  border-radius:8px;
+  border:2px solid #17191a;
+  background:
+    linear-gradient(#4c4c49,#292b2b 45%,#1d2020);
+  box-shadow:
+    inset 0 0 0 2px #65615a,
+    inset 0 0 20px #111,
+    0 5px 0 #101111,
+    0 9px 15px rgba(0,0,0,.5);
+  color:#c5b35b;
+  font-size:29px;
+  font-weight:bold;
+  text-shadow:2px 2px #171717;
+}
+
+.menu-button:hover,
+.menu-button:active{
+  filter:brightness(1.2);
+  transform:translateY(1px);
+}
+
+.menu-button.secondary{
+  color:#aaa;
+}
+
+.menu-version{
+  margin-top:22px;
+  font-family:monospace;
+  font-size:11px;
+  color:#777;
+}
+
+/* =========================
+   GAME
+========================= */
+
+#game{
+  position:absolute;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  background:#101516;
+}
+
+.topbar{
+  height:72px;
+  min-height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:
+    max(6px,env(safe-area-inset-top))
+    10px 5px;
+  background:
+    linear-gradient(#303435,#1b2021);
+  border-bottom:2px solid #090b0b;
+  box-shadow:0 2px 10px #000;
+  z-index:10;
+}
+
+.brand{
+  font-weight:bold;
+  font-size:16px;
+  color:#c7b866;
+}
+
+.coords{
+  font-family:monospace;
+  font-size:11px;
+  color:#999;
+}
+
+.timebox{
+  text-align:right;
+  font-family:monospace;
+  color:#ddd;
+}
+
+.timebox strong{
+  color:#c8b95d;
+  font-size:15px;
+}
+
+/* survival bar */
+
+.survival{
+  height:46px;
+  min-height:46px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:5px;
+  padding:5px 8px;
+  background:#171b1c;
+  border-bottom:1px solid #343838;
+  z-index:10;
+}
+
+.stat{
+  position:relative;
+  min-width:0;
+  padding:4px 6px;
+  background:#252a2a;
+  border:1px solid #454848;
+  border-radius:3px;
+  overflow:hidden;
+}
+
+.stat-name{
+  font-size:9px;
+  color:#999;
+}
+
+.stat-value{
+  font-family:monospace;
+  font-size:12px;
+}
+
+.stat-fill{
+  position:absolute;
+  left:0;
+  bottom:0;
+  height:3px;
+  width:50%;
+  background:#b7aa57;
+}
+
+/* =========================
+   MAP
+========================= */
+
+.map-wrap{
+  position:relative;
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+  background:#232826;
+}
+
+#mapCanvas{
+  display:block;
+  width:100%;
+  height:100%;
+  image-rendering:auto;
+  touch-action:none;
+}
+
+.location-label{
+  position:absolute;
+  left:12px;
+  top:10px;
+  padding:7px 12px;
+  background:rgba(18,20,20,.82);
+  border-left:4px solid #b6a64e;
+  font-size:14px;
+  pointer-events:none;
+}
+
+.weather-label{
+  position:absolute;
+  right:10px;
+  top:10px;
+  padding:6px 9px;
+  background:rgba(18,20,20,.75);
+  font-size:11px;
+  color:#bbb;
+  pointer-events:none;
+}
+
+.target-label{
+  position:absolute;
+  left:50%;
+  bottom:8px;
+  transform:translateX(-50%);
+  padding:5px 10px;
+  border-radius:4px;
+  background:rgba(20,22,22,.86);
+  color:#c5bb7a;
+  font-size:11px;
+  opacity:0;
+  transition:.2s;
+  pointer-events:none;
+}
+
+.target-label.show{
+  opacity:1;
+}
+
+/* =========================
+   DIRECTION CONTROLS
+========================= */
+
+.controls{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:5;
+}
+
+.arrow{
+  position:absolute;
+  width:68px;
+  height:68px;
+  border-radius:5px;
+  pointer-events:auto;
+
+  background:
+    linear-gradient(#545856,#282c2c 45%,#202323);
+
+  border:2px solid #111;
+  box-shadow:
+    inset 0 0 0 1px #747875,
+    0 3px 6px #000;
+
+  color:#c6c3aa;
+  font-family:Arial,sans-serif;
+  font-size:38px;
+  line-height:1;
+  text-shadow:2px 2px #111;
+  user-select:none;
+  touch-action:none;
+}
+
+.arrow:active,
+.arrow.active{
+  transform:scale(.94);
+  background:#66675e;
+}
+
+.arrow.up{
+  top:18px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.arrow.down{
+  bottom:18px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.arrow.left{
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.arrow.right{
+  right:16px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.arrow.up:active,
+.arrow.down:active{
+  transform:translateX(-50%) scale(.94);
+}
+
+.arrow.left:active,
+.arrow.right:active{
+  transform:translateY(-50%) scale(.94);
+}
+
+/* =========================
+   BOTTOM BAR
+========================= */
+
+.bottom{
+  height:86px;
+  min-height:86px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  padding:7px 8px max(7px,env(safe-area-inset-bottom));
+  background:
+    linear-gradient(#292d2d,#151818);
+  border-top:2px solid #080909;
+  z-index:10;
+}
+
+.bottom-btn{
+  border:1px solid #4b4e4d;
+  border-radius:5px;
+  background:#252929;
+  font-size:25px;
+  color:#aaa;
+}
+
+.bottom-btn small{
+  display:block;
+  font-family:Arial,sans-serif;
+  font-size:9px;
+  margin-top:2px;
+  color:#aaa;
+}
+
+.bottom-btn:active{
+  background:#4a4d48;
+}
+
+/* =========================
+   PANELS
+========================= */
+
+.overlay{
+  position:absolute;
+  inset:0;
+  z-index:30;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  background:rgba(0,0,0,.62);
+}
+
 .panel{
- width:min(680px,calc(100% - 24px));max-height:80%;
- overflow:auto;background:#12191d;border:1px solid #46535a;border-radius:9px;padding:16px
+  width:min(560px,100%);
+  max-height:88%;
+  overflow:auto;
+  background:
+    linear-gradient(#303333,#1b1f20);
+  border:1px solid #666;
+  border-bottom:0;
+  border-radius:12px 12px 0 0;
+  box-shadow:0 -10px 30px #000;
+  padding:16px;
 }
-.panel h2{margin:0 0 12px;font-size:18px}
-.item{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #293237;padding:9px 0;font-size:13px}
-.close{float:right}
-#routeBox{
- position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
- width:min(400px,calc(100% - 25px));background:#11181c;
- border:1px solid #4b575d;border-radius:8px;padding:14px;display:none;z-index:10
+
+.panel h2{
+  margin:0 0 12px;
+  color:#c8b45a;
+  font-size:23px;
 }
-.route{border:1px solid #38454b;padding:10px;margin:7px 0;border-radius:6px;cursor:pointer}
-.route:hover{background:#202a2e}
-.small{font-size:11px;color:#9ea9ad}
-#toast{
- position:absolute;left:50%;top:75px;transform:translateX(-50%);
- background:#121a1e;border:1px solid #59666b;padding:8px 13px;border-radius:5px;
- opacity:0;transition:.2s;pointer-events:none;z-index:30;font-size:12px
+
+.close{
+  float:right;
+  width:38px;
+  height:38px;
+  border-radius:4px;
+  background:#3c4140;
 }
-@media(max-width:850px){
- #top{height:52px}
- #hud{width:190px;right:7px;top:7px;padding:8px}
- #actions{left:7px;bottom:72px;width:210px}
- #command{width:calc(100% - 230px);left:auto;right:7px;transform:none;bottom:48px}
- #log{width:calc(100% - 230px);left:auto;right:7px;transform:none;bottom:8px}
- #menu{right:7px;bottom:7px}
- #mobile{display:block}
+
+.item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px 7px;
+  border-bottom:1px solid #383c3c;
+}
+
+.item-name{
+  color:#ddd;
+}
+
+.item-info{
+  color:#888;
+  font-size:11px;
+}
+
+.action{
+  padding:9px 12px;
+  border-radius:4px;
+  background:#56584f;
+  border:1px solid #777;
+}
+
+.action:active{
+  background:#77796c;
+}
+
+/* =========================
+   COMMAND BAR
+========================= */
+
+.command{
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:94px;
+  z-index:7;
+  display:none;
+  background:#181b1b;
+  border:1px solid #666;
+  border-radius:5px;
+  padding:5px;
+}
+
+.command input{
+  width:100%;
+  height:42px;
+  background:#252928;
+  border:1px solid #555;
+  color:#ddd;
+  padding:0 10px;
+  outline:none;
+}
+
+/* =========================
+   MESSAGE
+========================= */
+
+#message{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:40;
+  width:min(420px,85vw);
+  padding:15px;
+  background:rgba(20,22,22,.94);
+  border:1px solid #777;
+  border-radius:6px;
+  box-shadow:0 10px 35px #000;
+  text-align:center;
+  display:none;
+}
+
+#message h3{
+  color:#c9b85a;
+  margin:0 0 7px;
+}
+
+#message p{
+  margin:0;
+  color:#ccc;
+  font-size:14px;
+}
+
+/* =========================
+   DESKTOP
+========================= */
+
+@media(min-width:800px){
+
+  #game{
+    max-width:1200px;
+    margin:auto;
+    border-left:1px solid #333;
+    border-right:1px solid #333;
+  }
+
+  .arrow{
+    width:76px;
+    height:76px;
+  }
+
+  .arrow.up{top:25px}
+  .arrow.down{bottom:25px}
+  .arrow.left{left:25px}
+  .arrow.right{right:25px}
+
+  .bottom{
+    height:75px;
+    min-height:75px;
+    padding-bottom:7px;
+  }
+
+  .menu-content{
+    width:410px;
+  }
 }
 </style>
 </head>
+
 <body>
+
 <div id="app">
- <div id="top">
-  <div class="logo">THE LONG DARK</div>
-  <div class="info">
-   <span id="date">День 1 · 08:00</span>
-   <span id="place">Mystery Lake</span>
-   <span id="weather">Ясно</span>
-   <span id="temp">−8°C</span>
+
+<!-- =========================
+     MENU
+========================= -->
+
+<section id="menu">
+
+  <div class="menu-character"></div>
+  <div class="menu-character right"></div>
+
+  <div class="menu-content">
+
+    <div class="game-logo">
+      THE<br>DARK
+    </div>
+
+    <div class="logo-sub">
+      MYSTERY LAKE
+    </div>
+
+    <button class="menu-button" onclick="newGame()">
+      Играть
+    </button>
+
+    <button class="menu-button" onclick="continueGame()">
+      Продолжить
+    </button>
+
+    <button class="menu-button secondary" onclick="openSettings()">
+      Настройки
+    </button>
+
+    <button class="menu-button secondary" onclick="showAbout()">
+      Об игре
+    </button>
+
+    <button class="menu-button secondary" onclick="exitGame()">
+      Выход
+    </button>
+
+    <div class="menu-version">
+      SURVIVAL BUILD 0.3 · MYSTERY LAKE
+    </div>
+
   </div>
- </div>
+</section>
 
- <div id="game">
-  <canvas id="map"></canvas>
 
-  <div id="hud">
-   <div class="hrow"><div class="hlabel"><span>Здоровье</span><b id="healthTxt">100%</b></div><div class="bar"><div id="health" class="fill good"></div></div></div>
-   <div class="hrow"><div class="hlabel"><span>Голод</span><b id="hungerTxt">100%</b></div><div class="bar"><div id="hunger" class="fill"></div></div></div>
-   <div class="hrow"><div class="hlabel"><span>Жажда</span><b id="thirstTxt">100%</b></div><div class="bar"><div id="thirst" class="fill"></div></div></div>
-   <div class="hrow"><div class="hlabel"><span>Усталость</span><b id="fatigueTxt">100%</b></div><div class="bar"><div id="fatigue" class="fill"></div></div></div>
-   <div class="hrow"><div class="hlabel"><span>Тепло</span><b id="warmthTxt">0°C</b></div><div class="bar"><div id="warmth" class="fill warn"></div></div></div>
-   <div class="hrow"><div class="hlabel"><span>Вес</span><b id="weightTxt">7.0 / 30 кг</b></div><div class="bar"><div id="weight" class="fill"></div></div></div>
-   <div class="small" id="status">Состояние: нормально</div>
- </div>
+<!-- =========================
+     GAME
+========================= -->
 
- <div id="actions">
-  <h3 id="nearTitle">Рядом</h3>
-  <div class="actionGrid" id="actionGrid"></div>
- </div>
+<section id="game">
 
- <div id="command">
-  <input id="cmd" placeholder="Например: осмотреть дом, взять топор, идти к озеру">
-  <button onclick="command()">OK</button>
- </div>
+  <header class="topbar">
 
- <div id="log">Ты стоишь среди заснеженного леса. Выбери точку на карте.</div>
+    <div>
+      <div class="brand">THE LONG DARK</div>
+      <div class="coords" id="coords">X: 0 · Y: 0</div>
+    </div>
 
- <div id="menu">
-  <button onclick="openInventory()">🎒</button>
-  <button onclick="openMapInfo()">🗺️</button>
-  <button onclick="saveGame()">💾</button>
- </div>
+    <div class="timebox">
+      <div id="dateText">День 1</div>
+      <strong id="clock">08:00</strong>
+    </div>
 
- <div id="mobile">
-  <button class="dpad" id="up">▲</button>
-  <button class="dpad" id="down">▼</button>
-  <button class="dpad" id="left">◀</button>
-  <button class="dpad" id="right">▶</button>
- </div>
+  </header>
 
- <div id="routeBox">
-  <b>Выбери способ движения</b>
-  <div class="small" id="routeDescription" style="margin:8px 0"></div>
-  <div class="route" onclick="chooseRoute('trail')"><b>🥾 По тропе</b><br><span class="small" id="trailRoute"></span></div>
-  <div class="route" onclick="chooseRoute('forest')"><b>🌲 Через лес</b><br><span class="small" id="forestRoute"></span></div>
-  <div class="route" onclick="chooseRoute('slope')"><b>⛰️ Напрямик через склон</b><br><span class="small" id="slopeRoute"></span></div>
-  <button style="width:100%" onclick="cancelRoute()">Отмена</button>
- </div>
 
- <div id="inventoryModal" class="modal">
-  <div class="panel">
-   <button class="close" onclick="closeModals()">✕</button>
-   <h2>Инвентарь</h2>
-   <div id="inventoryList"></div>
+  <div class="survival">
+
+    <div class="stat">
+      <div class="stat-name">❤️ СОСТОЯНИЕ</div>
+      <div class="stat-value" id="health">100</div>
+      <div class="stat-fill" id="healthFill"></div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-name">🍖 ГОЛОД</div>
+      <div class="stat-value" id="hunger">100</div>
+      <div class="stat-fill" id="hungerFill"></div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-name">💧 ЖАЖДА</div>
+      <div class="stat-value" id="thirst">100</div>
+      <div class="stat-fill" id="thirstFill"></div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-name">⚡ ВЫНОСЛИВОСТЬ</div>
+      <div class="stat-value" id="stamina">100</div>
+      <div class="stat-fill" id="staminaFill"></div>
+    </div>
+
   </div>
- </div>
 
- <div id="mapModal" class="modal">
-  <div class="panel">
-   <button class="close" onclick="closeModals()">✕</button>
-   <h2>Mystery Lake</h2>
-   <p class="small">Нажми на любую область карты, чтобы задать направление движения.</p>
-   <p>🥾 Тропы — наиболее безопасный путь.</p>
-   <p>🌲 Лес — медленнее и требует больше сил.</p>
-   <p>⛰️ Склоны — опасны. На крутом рельефе можно поскользнуться, подвернуть ногу или получить серьёзную травму.</p>
-   <p>🌊 Глубокая вода непроходима.</p>
-  </div>
- </div>
 
- <div id="toast"></div>
- </div>
+  <main class="map-wrap">
+
+    <canvas id="mapCanvas"></canvas>
+
+    <div class="location-label" id="locationLabel">
+      📍 Mystery Lake
+    </div>
+
+    <div class="weather-label" id="weatherLabel">
+      Ясно · −8°C
+    </div>
+
+    <div class="target-label" id="targetLabel">
+      Направление задано
+    </div>
+
+
+    <div class="controls">
+
+      <button class="arrow up"
+              data-dir="up"
+              aria-label="Север">▲</button>
+
+      <button class="arrow left"
+              data-dir="left"
+              aria-label="Запад">◀</button>
+
+      <button class="arrow right"
+              data-dir="right"
+              aria-label="Восток">▶</button>
+
+      <button class="arrow down"
+              data-dir="down"
+              aria-label="Юг">▼</button>
+
+    </div>
+
+    <div class="command">
+      <input id="commandInput"
+             placeholder="осмотреть, взять, идти, костёр, инвентарь...">
+    </div>
+
+  </main>
+
+
+  <footer class="bottom">
+
+    <button class="bottom-btn" onclick="openInventory()">
+      🎒
+      <small>РЮКЗАК</small>
+    </button>
+
+    <button class="bottom-btn" onclick="inspectPlayer()">
+      👁
+      <small>ОСМОТР</small>
+    </button>
+
+    <button class="bottom-btn" onclick="interact()">
+      🔥
+      <small>ДЕЙСТВИЕ</small>
+    </button>
+
+    <button class="bottom-btn" onclick="openMapInfo()">
+      🗺
+      <small>КАРТА</small>
+    </button>
+
+    <button class="bottom-btn" onclick="saveGame()">
+      💾
+      <small>СОХРАНИТЬ</small>
+    </button>
+
+  </footer>
+
+</section>
+
+
+<!-- =========================
+     PANEL
+========================= -->
+
+<div class="overlay" id="panelOverlay" onclick="closePanel(event)">
+  <div class="panel" id="panel"></div>
 </div>
 
+
+<div id="message">
+  <h3 id="messageTitle"></h3>
+  <p id="messageText"></p>
+</div>
+
+</div>
+
+
 <script>
-"use strict";
+/* ============================================================
+   THE LONG DARK — MYSTERY LAKE
+   Single-file browser survival prototype
+============================================================ */
 
-/* =========================
-   CORE STATE
-========================= */
-const canvas=document.getElementById("map");
-const ctx=canvas.getContext("2d");
-
-const state={
- day:1,
- minutes:8*60,
- weather:"Ясно",
- temperature:-8,
- wind:4,
- health:100,
- hunger:100,
- thirst:100,
- fatigue:100,
- bodyTemp:36.7,
- warmth:0,
- injuries:[],
- x:820,
- y:650,
- target:null,
- moving:false,
- routeType:null,
- discovered:new Set(["camp","lake","office"]),
- selected:null,
- animals:[],
- fire:null,
- inventory:[
-  {id:"water",name:"Вода",qty:1,weight:.8,type:"food"},
-  {id:"crackers",name:"Сухари",qty:2,weight:.08,type:"food"},
-  {id:"matches",name:"Спички",qty:12,weight:.02,type:"tool"},
-  {id:"hatchet",name:"Топор",qty:1,weight:1.5,type:"tool"},
-  {id:"knife",name:"Нож",qty:1,weight:.4,type:"tool"},
-  {id:"cloth",name:"Ткань",qty:2,weight:.05,type:"medical"},
-  {id:"bandage",name:"Бинт",qty:2,weight:.05,type:"medical"},
-  {id:"painkiller",name:"Обезболивающее",qty:2,weight:.03,type:"medical"},
-  {id:"wood",name:"Дрова",qty:2,weight:1.0,type:"fuel"}
- ],
- clothing:{
-  jacket:{name:"Тёплая куртка",warmth:5,wind:2},
-  pants:{name:"Штаны",warmth:2,wind:1},
-  boots:{name:"Ботинки",warmth:2,wind:1}
- }
-};
-
-const world={
- w:2600,h:1800,
- lake:{x:1370,y:920,rx:650,ry:330},
- locations:[
-  {id:"crash",name:"Место крушения",x:350,y:270,type:"landmark"},
-  {id:"northforest",name:"Северный лес",x:780,y:300,type:"forest"},
-  {id:"office",name:"Camp Office",x:1040,y:700,type:"building"},
-  {id:"camp",name:"Лагерь у озера",x:820,y:650,type:"camp"},
-  {id:"trapper",name:"Домик охотника",x:420,y:1280,type:"building"},
-  {id:"rail",name:"Железная дорога",x:600,y:930,type:"trail"},
-  {id:"cabin",name:"Одинокая хижина",x:2050,y:520,type:"building"},
-  {id:"ridge",name:"Горный хребет",x:2050,y:1120,type:"slope"},
-  {id:"cave",name:"Снежная пещера",x:2200,y:1450,type:"cave"},
-  {id:"southtrail",name:"Южная тропа",x:1260,y:1420,type:"trail"}
- ],
- trails:[
-  [[820,650],[700,700],[600,820],[600,930],[730,1050],[980,1170],[1260,1420]],
-  [[820,650],[900,570],[1040,700]],
-  [[1040,700],[1260,690],[1550,620],[1850,520],[2050,520]],
-  [[600,930],[450,1050],[420,1280]],
-  [[1260,1420],[1500,1380],[1750,1300],[2050,1120],[2200,1450]]
- ]
-};
-
-let camera={x:0,y:0,zoom:1};
-let keys={};
-let last=performance.now();
-let pendingDestination=null;
-let gamePaused=false;
 
 /* =========================
    CANVAS
 ========================= */
-function resize(){
- canvas.width=canvas.clientWidth*devicePixelRatio;
- canvas.height=canvas.clientHeight*devicePixelRatio;
- ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-}
-addEventListener("resize",resize);
-resize();
 
-function screenToWorld(sx,sy){
- const r=canvas.getBoundingClientRect();
- return {
-  x:(sx-r.left)/camera.zoom+camera.x,
-  y:(sy-r.top)/camera.zoom+camera.y
- };
-}
-function worldToScreen(x,y){
- return {
-  x:(x-camera.x)*camera.zoom,
-  y:(y-camera.y)*camera.zoom
- };
+const canvas = document.getElementById("mapCanvas");
+const ctx = canvas.getContext("2d");
+
+let W = 0;
+let H = 0;
+
+function resizeCanvas(){
+
+  const r = canvas.getBoundingClientRect();
+
+  W = Math.max(1,Math.floor(r.width));
+  H = Math.max(1,Math.floor(r.height));
+
+  const dpr = Math.min(window.devicePixelRatio || 1,2);
+
+  canvas.width = W*dpr;
+  canvas.height = H*dpr;
+
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 
-function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+window.addEventListener("resize",resizeCanvas);
+
+
+/* =========================
+   GAME STATE
+========================= */
+
+const defaultState = {
+
+  day:1,
+  minutes:8*60,
+
+  health:100,
+  hunger:100,
+  thirst:100,
+  stamina:100,
+  fatigue:8,
+
+  bodyTemp:-8,
+  warmth:0,
+
+  x:520,
+  y:430,
+
+  weather:"Ясно",
+  wind:2,
+  snow:0,
+
+  weight:8,
+  maxWeight:30,
+
+  injury:null,
+
+  location:"Mystery Lake",
+
+  inventory:[
+    {id:"water",name:"Вода",amount:1,weight:1},
+    {id:"matches",name:"Спички",amount:12,weight:.1},
+    {id:"torch",name:"Факел",amount:1,weight:.3},
+    {id:"knife",name:"Нож",amount:1,weight:.4},
+    {id:"bandage",name:"Бинт",amount:2,weight:.1},
+    {id:"pain",name:"Обезболивающее",amount:2,weight:.05},
+    {id:"jerky",name:"Вяленое мясо",amount:1,weight:.4}
+  ],
+
+  discovered:[
+    "Крушение",
+    "Озеро",
+    "Кабина",
+    "Лес"
+  ],
+
+  fire:{
+    active:false,
+    fuel:0,
+    temp:0
+  },
+
+  settings:{
+    sound:true,
+    animations:true
+  }
+};
+
+let state = structuredClone(defaultState);
+
+let camera = {
+  x:0,
+  y:0
+};
+
+let target = null;
+
+let keys = {};
+
+let animals = [
+  {
+    type:"wolf",
+    x:770,
+    y:355,
+    alive:true,
+    wander:0
+  },
+  {
+    type:"wolf",
+    x:350,
+    y:600,
+    alive:true,
+    wander:0
+  },
+  {
+    type:"rabbit",
+    x:620,
+    y:520,
+    alive:true,
+    wander:0
+  },
+  {
+    type:"rabbit",
+    x:470,
+    y:310,
+    alive:true,
+    wander:0
+  }
+];
+
+
+/* =========================
+   WORLD
+========================= */
+
+const WORLD_W = 1500;
+const WORLD_H = 1000;
+
+const locations = [
+
+  {
+    name:"Крушение",
+    x:520,
+    y:430,
+    r:38,
+    color:"#777",
+    icon:"✈",
+    description:"Разбитый самолёт. Здесь можно найти полезные вещи."
+  },
+
+  {
+    name:"Охотничья хижина",
+    x:790,
+    y:270,
+    r:35,
+    color:"#785c40",
+    icon:"⌂",
+    description:"Небольшая деревянная хижина."
+  },
+
+  {
+    name:"Кабина у озера",
+    x:1030,
+    y:610,
+    r:32,
+    color:"#785c40",
+    icon:"⌂",
+    description:"Старая кабина. Внутри можно укрыться."
+  },
+
+  {
+    name:"Железнодорожные пути",
+    x:1150,
+    y:420,
+    r:30,
+    color:"#777",
+    icon:"═",
+    description:"Старые железнодорожные пути."
+  },
+
+  {
+    name:"Лес",
+    x:270,
+    y:280,
+    r:80,
+    color:"#384937",
+    icon:"♣",
+    description:"Густой хвойный лес."
+  },
+
+  {
+    name:"Озеро",
+    x:820,
+    y:690,
+    r:180,
+    color:"#384d50",
+    icon:"≈",
+    description:"Замёрзшее озеро Mystery Lake."
+  },
+
+  {
+    name:"Лагерь",
+    x:390,
+    y:760,
+    r:30,
+    color:"#735b40",
+    icon:"⌂",
+    description:"Небольшое место для временного лагеря."
+  }
+
+];
+
+
+/* =========================
+   TERRAIN
+========================= */
+
+function terrainAt(x,y){
+
+  /* lake */
+
+  const lakeDx = (x-820)/330;
+  const lakeDy = (y-690)/220;
+
+  if(lakeDx*lakeDx + lakeDy*lakeDy < 1){
+    return "lake";
+  }
+
+  /* forest zones */
+
+  if(
+    (x<390 && y<560) ||
+    (x<300 && y>620)
+  ){
+    return "forest";
+  }
+
+  /* mountains / steep slopes */
+
+  if(
+    x>1050 && y<250 ||
+    x<180 && y>720 ||
+    (x>1180 && y>600)
+  ){
+    return "slope";
+  }
+
+  /* rocks */
+
+  if(
+    (x>600 && x<720 && y>180 && y<280) ||
+    (x>250 && x<370 && y>600 && y<680)
+  ){
+    return "rocks";
+  }
+
+  /* trails */
+
+  const trail1 =
+    Math.abs(y-(450+0.25*(x-300)))<22;
+
+  const trail2 =
+    Math.abs(y-(700-0.45*(x-400)))<20;
+
+  const trail3 =
+    Math.abs(x-1040)<18 && y>300 && y<650;
+
+  if(trail1 || trail2 || trail3){
+    return "trail";
+  }
+
+  return "snow";
+}
+
+
+/* =========================
+   CAMERA
+========================= */
+
+function updateCamera(){
+
+  camera.x = state.x - W/2;
+  camera.y = state.y - H/2;
+
+  camera.x = Math.max(0,Math.min(WORLD_W-W,camera.x));
+  camera.y = Math.max(0,Math.min(WORLD_H-H,camera.y));
+}
+
+
+/* =========================
+   DRAW WORLD
+========================= */
 
 function draw(){
- const W=canvas.clientWidth,H=canvas.clientHeight;
- ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
- ctx.clearRect(0,0,W,H);
 
- ctx.save();
- ctx.translate(-camera.x*camera.zoom,-camera.y*camera.zoom);
- ctx.scale(camera.zoom,camera.zoom);
+  if(!W || !H)return;
 
- drawTerrain();
- drawTrails();
- drawLocations();
- drawAnimals();
- drawTarget();
- drawPlayer();
+  updateCamera();
 
- ctx.restore();
- drawVignette();
- requestAnimationFrame(draw);
+  ctx.clearRect(0,0,W,H);
+
+  ctx.save();
+
+  ctx.translate(-camera.x,-camera.y);
+
+  drawGround();
+  drawLake();
+  drawTrails();
+  drawForest();
+  drawMountains();
+  drawBuildings();
+  drawItems();
+  drawAnimals();
+  drawTarget();
+  drawPlayer();
+
+  ctx.restore();
+
+  drawWeatherOverlay();
+
+  requestAnimationFrame(draw);
 }
 
-function drawTerrain(){
- ctx.fillStyle="#b9c0bd";
- ctx.fillRect(0,0,world.w,world.h);
 
- /* snow patches */
- for(let i=0;i<180;i++){
-  const x=(i*137)%world.w;
-  const y=(i*83)%world.h;
-  ctx.fillStyle=i%3?"#c5cbc8":"#aeb7b4";
+/* =========================
+   GROUND
+========================= */
+
+function drawGround(){
+
+  ctx.fillStyle="#5d604f";
+  ctx.fillRect(0,0,WORLD_W,WORLD_H);
+
+  for(let y=0;y<WORLD_H;y+=28){
+
+    for(let x=0;x<WORLD_W;x+=28){
+
+      const t=terrainAt(x,y);
+
+      if(t==="snow"){
+        ctx.fillStyle=(Math.random()>.5)
+          ?"rgba(215,216,205,.10)"
+          :"rgba(35,40,35,.08)";
+      }else if(t==="forest"){
+        ctx.fillStyle="rgba(28,49,30,.42)";
+      }else if(t==="rocks"){
+        ctx.fillStyle="rgba(70,67,58,.32)";
+      }else{
+        continue;
+      }
+
+      ctx.fillRect(x,y,28,28);
+    }
+  }
+}
+
+
+/* =========================
+   LAKE
+========================= */
+
+function drawLake(){
+
+  ctx.save();
+
   ctx.beginPath();
-  ctx.ellipse(x,y,35+(i%7)*9,20+(i%5)*7,0,0,Math.PI*2);
+
+  ctx.ellipse(
+    820,
+    690,
+    330,
+    220,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fillStyle="#354d50";
   ctx.fill();
- }
 
- /* lake */
- ctx.save();
- ctx.fillStyle="#687e85";
- ctx.beginPath();
- ctx.ellipse(world.lake.x,world.lake.y,world.lake.rx,world.lake.ry,0,0,Math.PI*2);
- ctx.fill();
-
- ctx.strokeStyle="rgba(220,235,237,.45)";
- ctx.lineWidth=8;
- ctx.beginPath();
- ctx.ellipse(world.lake.x,world.lake.y,world.lake.rx-8,world.lake.ry-8,0,0,Math.PI*2);
- ctx.stroke();
- ctx.restore();
-
- /* mountains / slopes */
- slope(1880,700,250,180,0.0);
- slope(2050,1120,330,260,0.2);
- slope(650,220,270,180,-.1);
- slope(2250,1450,250,200,.3);
-
- /* forest */
- for(let i=0;i<320;i++){
-  const x=90+((i*193)%2350);
-  const y=90+((i*127)%1580);
-  if(inLake(x,y)) continue;
-  if(x>1120&&x<1650&&y>620&&y<1200) continue;
-  if(Math.hypot(x-1040,y-700)<120)continue;
-  tree(x,y,0.65+(i%5)*.08);
- }
-
- /* small rocks */
- for(let i=0;i<120;i++){
-  const x=(i*223)%world.w,y=(i*91)%world.h;
-  if(inLake(x,y))continue;
-  ctx.fillStyle="#7d8787";
-  ctx.beginPath();ctx.ellipse(x,y,5+i%5,3+i%4,0,0,Math.PI*2);ctx.fill();
- }
-}
-
-function slope(x,y,rx,ry,rot){
- ctx.save();
- ctx.translate(x,y);ctx.rotate(rot);
- const g=ctx.createRadialGradient(0,0,10,0,0,rx);
- g.addColorStop(0,"#717a79");
- g.addColorStop(.45,"#919998");
- g.addColorStop(1,"rgba(160,168,166,.1)");
- ctx.fillStyle=g;
- ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="rgba(70,78,78,.35)";
- ctx.lineWidth=3;
- for(let i=-4;i<5;i++){
-  ctx.beginPath();
-  ctx.moveTo(-rx*.7, i*ry*.17);
-  ctx.lineTo(rx*.7, i*ry*.17+30);
+  ctx.strokeStyle="rgba(205,215,208,.22)";
+  ctx.lineWidth=4;
   ctx.stroke();
- }
- ctx.restore();
+
+  for(let i=0;i<28;i++){
+
+    const a=Math.random()*Math.PI*2;
+    const r=Math.random();
+
+    const x=820+Math.cos(a)*330*r;
+    const y=690+Math.sin(a)*220*r;
+
+    ctx.strokeStyle="rgba(210,220,215,.16)";
+    ctx.beginPath();
+    ctx.moveTo(x-20,y);
+    ctx.lineTo(x+20,y+Math.random()*5);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
-function tree(x,y,s){
- ctx.save();
- ctx.translate(x,y);ctx.scale(s,s);
- ctx.fillStyle="#3f4544";
- ctx.fillRect(-3,5,6,19);
- ctx.fillStyle="#394a48";
- ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(-18,8);ctx.lineTo(18,8);ctx.closePath();ctx.fill();
- ctx.beginPath();ctx.moveTo(0,-17);ctx.lineTo(-22,19);ctx.lineTo(22,19);ctx.closePath();ctx.fill();
- ctx.restore();
-}
+
+/* =========================
+   TRAILS
+========================= */
 
 function drawTrails(){
- ctx.lineCap="round";
- ctx.lineJoin="round";
- for(const trail of world.trails){
-  ctx.strokeStyle="#8c8b80";
-  ctx.lineWidth=20;
+
+  ctx.lineWidth=18;
+  ctx.lineCap="round";
+  ctx.strokeStyle="#81785e";
+
   ctx.beginPath();
-  trail.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.moveTo(100,400);
+  ctx.lineTo(450,487);
+  ctx.lineTo(850,587);
+  ctx.lineTo(1100,650);
   ctx.stroke();
-  ctx.strokeStyle="#d7d7ce";
-  ctx.lineWidth=12;
+
+  ctx.beginPath();
+  ctx.moveTo(390,760);
+  ctx.lineTo(650,585);
+  ctx.lineTo(1040,520);
   ctx.stroke();
- }
+
+  ctx.lineWidth=3;
+  ctx.strokeStyle="rgba(40,35,27,.55)";
+
+  ctx.beginPath();
+  ctx.moveTo(100,400);
+  ctx.lineTo(450,487);
+  ctx.lineTo(850,587);
+  ctx.lineTo(1100,650);
+  ctx.stroke();
 }
 
-function drawLocations(){
- for(const l of world.locations){
-  const known=state.discovered.has(l.id)||dist(state,l)<500;
-  if(!known)continue;
-
-  let col="#d8dddd";
-  if(l.type==="building")col="#755f4d";
-  if(l.type==="camp")col="#8c6c45";
-  if(l.type==="cave")col="#526064";
-  if(l.type==="slope")col="#687171";
-
-  ctx.save();
-  ctx.translate(l.x,l.y);
-
-  if(l.type==="building"){
-   ctx.fillStyle=col;ctx.fillRect(-30,-20,60,40);
-   ctx.fillStyle="#343a3b";ctx.beginPath();ctx.moveTo(-38,-20);ctx.lineTo(0,-48);ctx.lineTo(38,-20);ctx.closePath();ctx.fill();
-   ctx.fillStyle="#202527";ctx.fillRect(-7,4,14,16);
-  }else if(l.type==="camp"){
-   ctx.strokeStyle="#6e5237";ctx.lineWidth=3;
-   ctx.beginPath();ctx.moveTo(-30,20);ctx.lineTo(0,-30);ctx.lineTo(30,20);ctx.closePath();ctx.stroke();
-   ctx.fillStyle="#ad8b55";ctx.beginPath();ctx.arc(0,7,8,0,Math.PI*2);ctx.fill();
-  }else{
-   ctx.fillStyle=col;ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();
-  }
-
-  ctx.fillStyle="#11181a";
-  ctx.font="bold 12px Arial";
-  ctx.textAlign="center";
-  ctx.fillText(l.name,0,65);
-  ctx.restore();
- }
-}
-
-function drawAnimals(){
- for(const a of state.animals){
-  const d=dist(state,a);
-  if(d>550)continue;
-  const p=worldToScreen(a.x,a.y);
-  ctx.save();
-  ctx.translate(a.x,a.y);
-  ctx.fillStyle=a.type==="wolf"?"#404648":"#8c7b68";
-  ctx.beginPath();ctx.ellipse(0,0,a.type==="wolf"?18:12,9,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#24292a";ctx.beginPath();ctx.arc(14,-4,6,0,Math.PI*2);ctx.fill();
-  ctx.restore();
- }
-}
-
-function drawTarget(){
- if(!state.target)return;
- ctx.save();
- ctx.strokeStyle="#ece4b0";
- ctx.lineWidth=2;
- ctx.beginPath();ctx.arc(state.target.x,state.target.y,12+Math.sin(Date.now()/150)*3,0,Math.PI*2);ctx.stroke();
- ctx.beginPath();ctx.moveTo(state.target.x-18,state.target.y);ctx.lineTo(state.target.x+18,state.target.y);ctx.moveTo(state.target.x,state.target.y-18);ctx.lineTo(state.target.x,state.target.y+18);ctx.stroke();
- ctx.restore();
-}
-
-function drawPlayer(){
- ctx.save();
- ctx.translate(state.x,state.y);
- ctx.fillStyle="#171c1d";
- ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();
- ctx.fillStyle="#c4c9c8";ctx.beginPath();ctx.arc(0,-5,7,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="#e3e7e5";ctx.lineWidth=2;ctx.stroke();
- ctx.restore();
-}
-
-function drawVignette(){
- const W=canvas.clientWidth,H=canvas.clientHeight;
- const g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.25,W/2,H/2,Math.max(W,H)*.75);
- g.addColorStop(0,"rgba(0,0,0,0)");
- g.addColorStop(1,"rgba(0,0,0,.45)");
- ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-}
 
 /* =========================
-   MOVEMENT
+   FOREST
 ========================= */
-canvas.addEventListener("pointerdown",e=>{
- if(gamePaused)return;
- const p=screenToWorld(e.clientX,e.clientY);
- if(inLake(p.x,p.y)){
-  log("Лёд/вода впереди. Эта точка непроходима.");
-  return;
- }
- if(distanceToMountain(p.x,p.y)<120){
-  pendingDestination=p;
-  showRouteChoice(p);
- }else{
-  setTarget(p,"direct");
- }
-});
 
-function setTarget(p,type){
- if(!p)return;
- pendingDestination=null;
- state.target={x:clamp(p.x,20,world.w-20),y:clamp(p.y,20,world.h-20)};
- state.routeType=type;
- state.moving=true;
- log("Маршрут проложен. Нажми на другую точку, чтобы изменить направление.");
-}
+function drawForest(){
 
-function showRouteChoice(p){
- pendingDestination=p;
- const d=dist(state,p);
- document.getElementById("routeDescription").textContent=
-  `Расстояние по прямой: ${Math.round(d)} м. Рельеф сложный.`;
- document.getElementById("trailRoute").textContent=
-  `${Math.round(d*1.8)} м · низкий риск · расход сил низкий`;
- document.getElementById("forestRoute").textContent=
-  `${Math.round(d*1.25)} м · средний риск · расход сил средний`;
- document.getElementById("slopeRoute").textContent=
-  `${Math.round(d)} м · ВЫСОКИЙ риск падения · расход сил высокий`;
- document.getElementById("routeBox").style.display="block";
-}
+  for(let i=0;i<170;i++){
 
-function chooseRoute(type){
- document.getElementById("routeBox").style.display="none";
- if(!pendingDestination)return;
- setTarget(pendingDestination,type);
-}
+    const x=(i*97)%WORLD_W;
+    const y=(i*53)%WORLD_H;
 
-function cancelRoute(){
- pendingDestination=null;
- document.getElementById("routeBox").style.display="none";
-}
+    if(terrainAt(x,y)!=="forest")continue;
 
-function movementSpeed(){
- let speed=115;
- const load=getWeight();
- const loadRatio=load/30;
+    ctx.fillStyle="#273827";
 
- speed*=1-loadRatio*.35;
- speed*=.65+state.fatigue/100*.35;
+    ctx.beginPath();
+    ctx.moveTo(x,y-22);
+    ctx.lineTo(x-15,y+16);
+    ctx.lineTo(x+15,y+16);
+    ctx.closePath();
+    ctx.fill();
 
- if(state.routeType==="trail")speed*=1.05;
- if(state.routeType==="forest")speed*=.68;
- if(state.routeType==="slope")speed*=.42;
-
- if(state.weather==="Метель")speed*=.62;
- if(state.weather==="Сильный снег")speed*=.76;
-
- if(state.injuries.some(x=>x.type==="ankle"))speed*=.55;
- if(state.injuries.some(x=>x.type==="legFracture"))speed*=.22;
-
- return Math.max(10,speed);
-}
-
-function updateMovement(dt){
- let dx=0,dy=0;
-
- if(keys.w||keys.ArrowUp)dy--;
- if(keys.s||keys.ArrowDown)dy++;
- if(keys.a||keys.ArrowLeft)dx--;
- if(keys.d||keys.ArrowRight)dx++;
-
- if(dx||dy){
-  const n=Math.hypot(dx,dy);
-  state.target=null;
-  state.moving=true;
-  move(dx/n*movementSpeed()*dt,dy/n*movementSpeed()*dt,true);
- }else if(state.target){
-  const dx2=state.target.x-state.x;
-  const dy2=state.target.y-state.y;
-  const d=Math.hypot(dx2,dy2);
-  if(d<8){
-   state.target=null;
-   state.moving=false;
-   log("Ты достиг выбранной точки.");
-  }else{
-   move(dx2/d*movementSpeed()*dt,dy2/d*movementSpeed()*dt,false);
+    ctx.fillStyle="#17241b";
+    ctx.fillRect(x-3,y+12,6,13);
   }
- }
 }
 
-function move(dx,dy,manual){
- let nx=state.x+dx,ny=state.y+dy;
- if(nx<20||ny<20||nx>world.w-20||ny>world.h-20)return;
-
- if(inLake(nx,ny)){
-  if(!manual)log("Маршрут упёрся в озеро. Точка назначения недоступна.");
-  return;
- }
-
- const slope=terrainSlope(nx,ny);
- let actualDx=dx,actualDy=dy;
-
- if(slope>0.82){
-  if(!manual) injuryCheck("extreme");
-  actualDx*=.3;actualDy*=.3;
- }else if(slope>.55){
-  if(Math.random()<.002)injuryCheck("steep");
- }
-
- state.x=nx;state.y=ny;
-
- const seconds=Math.max(1,Math.abs(dx)+Math.abs(dy))/movementSpeed()*60;
- advanceTime(seconds/60);
-
- discoverNearby();
-}
-
-function terrainSlope(x,y){
- let max=0;
- const hills=[
-  [1880,700,330,250],
-  [2050,1120,430,330],
-  [650,220,330,240],
-  [2250,1450,320,260]
- ];
- for(const h of hills){
-  const d=Math.hypot((x-h[0])/h[2],(y-h[1])/h[3]);
-  if(d<1)max=Math.max(max,1-d);
- }
- return max;
-}
-
-function distanceToMountain(x,y){
- return Math.min(
-  Math.hypot(x-2050,y-1120),
-  Math.hypot(x-1880,y-700),
-  Math.hypot(x-2250,y-1450)
- );
-}
-
-function inLake(x,y){
- const a=(x-world.lake.x)/world.lake.rx;
- const b=(y-world.lake.y)/world.lake.ry;
- return a*a+b*b<1;
-}
 
 /* =========================
-   INJURIES
+   MOUNTAINS
 ========================= */
-function injuryCheck(level){
- if(state.injuries.some(i=>i.type==="legFracture"))return;
 
- let chance=level==="extreme"?.035:.008;
- chance+=state.fatigue<25?.025:0;
- chance+=getWeight()>24?.015:0;
- chance+=state.weather==="Метель"?.012:0;
+function drawMountains(){
 
- if(Math.random()>chance)return;
+  const mountains=[
+    [90,850,180,120],
+    [1260,150,260,160],
+    [1300,760,230,170],
+    [70,90,160,100]
+  ];
 
- const r=Math.random();
+  mountains.forEach(m=>{
 
- if(level==="extreme"&&r<.15){
-  state.injuries.push({type:"legFracture",name:"Перелом ноги"});
-  state.health-=22;
-  log("⚠️ Ты сорвался на крутом склоне. Перелом ноги.");
-  toast("ПЕРЕЛОМ НОГИ");
- }else if(r<.65){
-  state.injuries.push({type:"ankle",name:"Вывих лодыжки"});
-  state.health-=8;
-  log("Ты поскользнулся. Сильный вывих лодыжки.");
-  toast("ВЫВИХ ЛОДЫЖКИ");
- }else{
-  state.injuries.push({type:"sprain",name:"Растяжение ноги"});
-  state.health-=4;
-  log("Ты неудачно поставил ногу. Растяжение.");
- }
- updateUI();
+    const [x,y,w,h]=m;
+
+    ctx.fillStyle="#4a4941";
+
+    ctx.beginPath();
+    ctx.moveTo(x-w/2,y+h/2);
+    ctx.lineTo(x,y-h/2);
+    ctx.lineTo(x+w/2,y+h/2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle="rgba(220,220,205,.30)";
+
+    ctx.beginPath();
+    ctx.moveTo(x,y-h/2);
+    ctx.lineTo(x-30,y);
+    ctx.lineTo(x+15,y-10);
+    ctx.lineTo(x+40,y+20);
+    ctx.closePath();
+    ctx.fill();
+  });
 }
+
 
 /* =========================
-   TIME / SURVIVAL
+   BUILDINGS
 ========================= */
-function advanceTime(hours){
- const mins=hours*60;
- state.minutes+=mins;
 
- while(state.minutes>=1440){
-  state.minutes-=1440;
-  state.day++;
- }
+function drawBuildings(){
 
- const h=state.minutes/60;
+  locations.forEach(loc=>{
 
- if(Math.random()<.0015)changeWeather();
+    if(loc.name==="Озеро" || loc.name==="Лес")return;
 
- const intensity=hours;
+    ctx.save();
 
- state.hunger=clamp(state.hunger-0.7*intensity,0,100);
- state.thirst=clamp(state.thirst-1.0*intensity,0,100);
- state.fatigue=clamp(state.fatigue-1.2*intensity,0,100);
+    ctx.translate(loc.x,loc.y);
 
- let cold=state.temperature+state.wind*-0.7;
- let clothing=Object.values(state.clothing).reduce((a,b)=>a+b.warmth,0);
+    ctx.fillStyle="#292624";
+    ctx.fillRect(-27,-20,54,40);
 
- state.warmth=clamp(cold+clothing-5, -30, 20);
- state.bodyTemp+=((state.warmth>-2?0.005:-0.012)*mins);
+    ctx.fillStyle="#71573f";
+    ctx.beginPath();
+    ctx.moveTo(-34,-20);
+    ctx.lineTo(0,-42);
+    ctx.lineTo(34,-20);
+    ctx.closePath();
+    ctx.fill();
 
- if(state.bodyTemp<35.8){
-  state.health-=0.12*intensity;
-  if(state.bodyTemp<35.0)state.injuries.push({type:"hypothermia",name:"Гипотермия"});
- }
+    ctx.fillStyle="#161817";
+    ctx.fillRect(-7,0,14,20);
 
- if(state.hunger<=0)state.health-=.05*intensity;
- if(state.thirst<=0)state.health-=.1*intensity;
- if(state.fatigue<=0)state.health-=.06*intensity;
+    ctx.restore();
 
- state.health=clamp(state.health,0,100);
+    ctx.fillStyle="#d4c9a2";
+    ctx.font="13px Georgia";
+    ctx.textAlign="center";
+    ctx.fillText(loc.name,loc.x,loc.y+53);
+  });
 }
 
-function changeWeather(){
- const arr=["Ясно","Облачно","Сильный снег","Метель"];
- state.weather=arr[Math.floor(Math.random()*arr.length)];
-
- if(state.weather==="Ясно"){state.temperature=-8;state.wind=3}
- if(state.weather==="Облачно"){state.temperature=-10;state.wind=5}
- if(state.weather==="Сильный снег"){state.temperature=-13;state.wind=7}
- if(state.weather==="Метель"){state.temperature=-17;state.wind=14}
-
- log("Погода изменилась: "+state.weather+".");
-}
-
-function rest(minutes){
- state.target=null;state.moving=false;
- state.fatigue=clamp(state.fatigue+minutes*.45,0,100);
- advanceTime(minutes/60);
- log(`Ты отдыхаешь ${minutes} минут.`);
-}
-
-function sleep(hours){
- if(!nearSafeShelter()){
-  log("Здесь небезопасно спать.");
-  return;
- }
- const h=Math.max(1,Math.min(12,hours));
- state.fatigue=clamp(state.fatigue+h*9,0,100);
- state.health=clamp(state.health+h*0.8,0,100);
- advanceTime(h);
- log(`Ты спал ${h} ч.`);
-}
-
-/* =========================
-   WORLD INTERACTION
-========================= */
-function discoverNearby(){
- for(const l of world.locations){
-  if(dist(state,l)<420){
-   state.discovered.add(l.id);
-  }
- }
-}
-
-function nearestLocation(){
- let best=null,bd=Infinity;
- for(const l of world.locations){
-  const d=dist(state,l);
-  if(d<bd){bd=d;best=l}
- }
- return {l:best,d:bd};
-}
-
-function nearSafeShelter(){
- const n=nearestLocation();
- return n.d<100&&(n.l.type==="building"||n.l.type==="cave"||n.l.type==="camp");
-}
-
-function nearbyActions(){
- const n=nearestLocation();
- const grid=document.getElementById("actionGrid");
- const title=document.getElementById("nearTitle");
- grid.innerHTML="";
- title.textContent=n.d<110?n.l.name:"Рядом";
-
- if(n.d<110){
-  addAction("Осмотреть",()=>inspect(n.l));
-  if(n.l.type==="building"||n.l.type==="cave"){
-   addAction("Отдохнуть",()=>rest(30));
-   addAction("Спать",()=>sleep(2));
-  }
-  if(n.l.type==="camp"){
-   addAction("Развести огонь",()=>makeFire());
-  }
- }else{
-  addAction("Осмотреть",()=>observe());
-  addAction("Слушать",()=>listen());
-  if(has("hatchet"))addAction("Дрова",()=>collectWood());
- }
-
- if(state.fire) addAction("Проверить огонь",checkFire);
-}
-
-function addAction(text,fn){
- const b=document.createElement("button");
- b.textContent=text;b.onclick=fn;
- document.getElementById("actionGrid").appendChild(b);
-}
-
-function inspect(l){
- if(l.type==="building"){
-  log(`${l.name}. Можно искать припасы, одежду и инструменты.`);
- }else if(l.type==="camp"){
-  log("Лагерь у озера. Здесь можно безопасно переждать непогоду и развести костёр.");
- }else if(l.type==="cave"){
-  log("Небольшая снежная пещера. Внутри почти нет ветра.");
- }else if(l.type==="slope"){
-  log("Крутой горный участок. Прямой подъём опасен.");
- }else{
-  log(`${l.name}. Вокруг следы животных и заснеженный лес.`);
- }
-}
-
-function observe(){
- const n=nearestLocation();
- if(n.d<350)log(`Впереди: ${n.l.name}, примерно ${Math.round(n.d)} м.`);
- else log("Снег, лес и холмы. Видимость ограничена.");
-}
-
-function listen(){
- if(Math.random()<.35){
-  log("Ты слышишь движение среди деревьев.");
- }else{
-  log("Только ветер и скрип снега под ногами.");
- }
-}
-
-/* =========================
-   FIRE
-========================= */
-function makeFire(){
- if(state.fire){
-  log("Здесь уже горит костёр.");
-  return;
- }
- if(!has("matches")||!has("wood")){
-  log("Нужны спички и топливо.");
-  return;
- }
- take("matches",1);
- take("wood",1);
- state.fire={minutes:55};
- log("Ты развёл костёр. Он будет гореть около 55 минут.");
-}
-
-function checkFire(){
- if(!state.fire)return;
- log(`Костёр: ${Math.max(0,Math.round(state.fire.minutes))} минут.`);
-}
-
-function updateFire(mins){
- if(!state.fire)return;
- state.fire.minutes-=mins;
- if(state.fire.minutes<=0){
-  state.fire=null;
-  log("Костёр погас.");
- }
-}
 
 /* =========================
    ITEMS
 ========================= */
-function has(id,qty=1){
- const i=state.inventory.find(x=>x.id===id);
- return !!i&&i.qty>=qty;
+
+function drawItems(){
+
+  const itemPositions=[
+    [450,390,"▣"],
+    [570,470,"◆"],
+    [890,500,"●"],
+    [690,350,"▣"],
+    [980,380,"◆"],
+    [330,510,"●"]
+  ];
+
+  itemPositions.forEach(i=>{
+
+    const [x,y,s]=i;
+
+    ctx.fillStyle="#d0b955";
+    ctx.beginPath();
+    ctx.arc(x,y,9,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#3d3920";
+    ctx.font="13px Arial";
+    ctx.textAlign="center";
+    ctx.fillText(s,x,y+5);
+  });
 }
 
-function take(id,qty){
- const i=state.inventory.find(x=>x.id===id);
- if(!i)return false;
- i.qty-=qty;
- if(i.qty<=0)state.inventory=state.inventory.filter(x=>x.id!==id);
- return true;
-}
-
-function addItem(id,name,qty,weight,type){
- let i=state.inventory.find(x=>x.id===id);
- if(i)i.qty+=qty;
- else state.inventory.push({id,name,qty,weight,type});
-}
-
-function getWeight(){
- return state.inventory.reduce((a,i)=>a+i.qty*i.weight,0);
-}
-
-function eat(){
- if(has("crackers")){
-  take("crackers",1);
-  state.hunger=clamp(state.hunger+18,0,100);
-  state.health=clamp(state.health+1,0,100);
-  advanceTime(.05);
-  log("Ты съел сухари.");
- }else log("В инвентаре нет еды.");
-}
-
-function drink(){
- if(has("water")){
-  take("water",1);
-  state.thirst=clamp(state.thirst+45,0,100);
-  advanceTime(.03);
-  log("Ты выпил воду.");
- }else log("Воды нет.");
-}
-
-function useBandage(){
- if(!has("bandage")){
-  log("Бинтов нет.");
-  return;
- }
- const injury=state.injuries.find(i=>i.type==="sprain"||i.type==="ankle");
- if(!injury){
-  log("Перевязывать нечего.");
-  return;
- }
- take("bandage",1);
- state.injuries=state.injuries.filter(i=>i!==injury);
- log("Ты обработал травму.");
-}
-
-function collectWood(){
- if(getWeight()>29){
-  log("Рюкзак слишком тяжёлый.");
-  return;
- }
- addItem("wood","Дрова",1,1,"fuel");
- state.fatigue=clamp(state.fatigue-2,0,100);
- advanceTime(.08);
- log("Ты подобрал кусок древесины.");
-}
-
-/* =========================
-   COMMAND SYSTEM
-========================= */
-function command(){
- const el=document.getElementById("cmd");
- const q=el.value.trim().toLowerCase();
- el.value="";
- if(!q)return;
-
- if(q.includes("инвентар"))return openInventory();
- if(q.includes("карту"))return openMapInfo();
- if(q.includes("есть")||q.includes("еда"))return eat();
- if(q.includes("пить")||q.includes("воду"))return drink();
- if(q.includes("бинт"))return useBandage();
- if(q.includes("кост"))return makeFire();
- if(q.includes("спать"))return sleep(2);
- if(q.includes("отдых"))return rest(30);
- if(q.includes("слуш"))return listen();
- if(q.includes("наблю")||q.includes("осмотр"))return observe();
-
- for(const l of world.locations){
-  if(q.includes(l.name.toLowerCase().split(" ")[0])){
-   setTarget({x:l.x,y:l.y},"trail");
-   log("Маршрут к "+l.name+" установлен.");
-   return;
-  }
- }
-
- if(q.includes("север"))return moveCommand(0,-1);
- if(q.includes("юг"))return moveCommand(0,1);
- if(q.includes("запад"))return moveCommand(-1,0);
- if(q.includes("восток"))return moveCommand(1,0);
-
- log("Команда не распознана. Попробуй: «инвентарь», «осмотреть», «идти к Camp Office», «есть», «пить».");
-}
-
-function moveCommand(dx,dy){
- setTarget({
-  x:clamp(state.x+dx*400,20,world.w-20),
-  y:clamp(state.y+dy*400,20,world.h-20)
- },"direct");
-}
-
-/* =========================
-   UI
-========================= */
-function updateUI(){
- const h=Math.floor(state.minutes/60).toString().padStart(2,"0");
- const m=Math.floor(state.minutes%60).toString().padStart(2,"0");
-
- document.getElementById("date").textContent=`День ${state.day} · ${h}:${m}`;
- document.getElementById("weather").textContent=state.weather;
- document.getElementById("temp").textContent=(state.temperature<0?"−":"")+Math.abs(state.temperature)+"°C";
-
- const n=nearestLocation();
- document.getElementById("place").textContent=n.d<120?n.l.name:"Mystery Lake";
-
- setBar("health",state.health);setTxt("healthTxt",state.health,"%");
- setBar("hunger",state.hunger);setTxt("hungerTxt",state.hunger,"%");
- setBar("thirst",state.thirst);setTxt("thirstTxt",state.thirst,"%");
- setBar("fatigue",state.fatigue);setTxt("fatigueTxt",state.fatigue,"%");
-
- const warm=clamp((state.warmth+30)/50*100,0,100);
- setBar("warmth",warm);
- document.getElementById("warmthTxt").textContent=
-  (state.warmth<0?"−":"+")+Math.abs(Math.round(state.warmth))+"°C";
-
- const weight=getWeight();
- setBar("weight",weight/30*100);
- document.getElementById("weightTxt").textContent=`${weight.toFixed(1)} / 30 кг`;
-
- let status="Состояние: нормально";
- if(state.injuries.length)status="Травмы: "+state.injuries.map(x=>x.name).join(", ");
- if(state.bodyTemp<35.8)status+=" · переохлаждение";
- document.getElementById("status").textContent=status;
-
- nearbyActions();
-
- camera.x=clamp(state.x-canvas.clientWidth/(2*camera.zoom),0,world.w-canvas.clientWidth/camera.zoom);
- camera.y=clamp(state.y-canvas.clientHeight/(2*camera.zoom),0,world.h-canvas.clientHeight/camera.zoom);
-}
-
-function setBar(id,v){
- document.getElementById(id).style.width=clamp(v,0,100)+"%";
-}
-function setTxt(id,v,s){
- document.getElementById(id).textContent=Math.round(v)+s;
-}
-
-function log(text){
- document.getElementById("log").textContent=text;
-}
-function toast(text){
- const t=document.getElementById("toast");
- t.textContent=text;t.style.opacity=1;
- clearTimeout(toast.t);
- toast.t=setTimeout(()=>t.style.opacity=0,1800);
-}
-
-/* =========================
-   INVENTORY
-========================= */
-function openInventory(){
- gamePaused=true;
- const box=document.getElementById("inventoryList");
- box.innerHTML="";
-
- for(const i of state.inventory){
-  const row=document.createElement("div");
-  row.className="item";
-  row.innerHTML=`
-   <span><b>${i.name}</b><br><span class="small">${i.qty} шт. · ${(i.qty*i.weight).toFixed(2)} кг</span></span>
-  `;
-  if(i.id==="crackers"||i.id==="water"){
-   const b=document.createElement("button");
-   b.textContent="Использовать";
-   b.onclick=()=>{i.id==="crackers"?eat():drink();openInventory()};
-   row.appendChild(b);
-  }
-  box.appendChild(row);
- }
- document.getElementById("inventoryModal").style.display="flex";
-}
-function openMapInfo(){
- gamePaused=true;
- document.getElementById("mapModal").style.display="flex";
-}
-function closeModals(){
- gamePaused=false;
- document.querySelectorAll(".modal").forEach(x=>x.style.display="none");
-}
-
-/* =========================
-   SAVE / LOAD
-========================= */
-function saveGame(){
- const data={
-  ...state,
-  discovered:[...state.discovered]
- };
- localStorage.setItem("tld_mystery_lake_v2",JSON.stringify(data));
- toast("Игра сохранена");
-}
-
-function loadGame(){
- const raw=localStorage.getItem("tld_mystery_lake_v2");
- if(!raw)return;
- try{
-  const d=JSON.parse(raw);
-  Object.assign(state,d);
-  state.discovered=new Set(d.discovered||[]);
-  log("Сохранение загружено.");
- }catch(e){}
-}
 
 /* =========================
    ANIMALS
 ========================= */
-function spawnAnimals(){
- state.animals=[];
- for(let i=0;i<5;i++){
-  state.animals.push({
-   type:"wolf",
-   x:400+Math.random()*1900,
-   y:250+Math.random()*1300
+
+function drawAnimals(){
+
+  animals.forEach(a=>{
+
+    if(!a.alive)return;
+
+    ctx.save();
+
+    ctx.translate(a.x,a.y);
+
+    if(a.type==="wolf"){
+
+      ctx.fillStyle="#292b29";
+
+      ctx.beginPath();
+      ctx.ellipse(0,0,17,8,0,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(10,-5);
+      ctx.lineTo(18,-15);
+      ctx.lineTo(20,-3);
+      ctx.closePath();
+      ctx.fill();
+
+    }else{
+
+      ctx.fillStyle="#a29b84";
+
+      ctx.beginPath();
+      ctx.ellipse(0,0,10,7,0,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(8,-5,6,0,Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   });
- }
- for(let i=0;i<8;i++){
-  state.animals.push({
-   type:"rabbit",
-   x:300+Math.random()*2100,
-   y:200+Math.random()*1400
-  });
- }
 }
 
-function updateAnimals(dt){
- for(const a of state.animals){
-  const dx=state.x-a.x,dy=state.y-a.y;
-  const d=Math.hypot(dx,dy);
-
-  if(a.type==="wolf"&&d<230){
-   a.x+=dx/d*22*dt;
-   a.y+=dy/d*22*dt;
-
-   if(d<55&&Math.random()<.006){
-    state.health-=5;
-    log("⚠️ Волк атаковал тебя!");
-   }
-  }else{
-   a.x+=(Math.random()-.5)*12*dt;
-   a.y+=(Math.random()-.5)*12*dt;
-  }
-  a.x=clamp(a.x,50,world.w-50);
-  a.y=clamp(a.y,50,world.h-50);
- }
-}
 
 /* =========================
-   LOOP
+   TARGET
 ========================= */
-function tick(now){
- const dt=Math.min(.1,(now-last)/1000);
- last=now;
 
- if(!gamePaused){
-  updateMovement(dt);
-  updateAnimals(dt);
- }
+function drawTarget(){
 
- updateUI();
+  if(!target)return;
 
- if(state.health<=0){
-  gamePaused=true;
-  log("Ты погиб. Обнови страницу, чтобы начать заново.");
- }
+  ctx.save();
 
- requestAnimationFrame(tick);
+  ctx.strokeStyle="#c8b85a";
+  ctx.lineWidth=2;
+
+  ctx.beginPath();
+  ctx.arc(target.x,target.y,12,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(target.x-18,target.y);
+  ctx.lineTo(target.x+18,target.y);
+  ctx.moveTo(target.x,target.y-18);
+  ctx.lineTo(target.x,target.y+18);
+  ctx.stroke();
+
+  ctx.restore();
 }
+
+
+/* =========================
+   PLAYER
+========================= */
+
+function drawPlayer(){
+
+  ctx.save();
+
+  ctx.translate(state.x,state.y);
+
+  ctx.fillStyle="rgba(0,0,0,.45)";
+  ctx.beginPath();
+  ctx.ellipse(0,12,15,7,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#b7b19b";
+  ctx.beginPath();
+  ctx.arc(0,-5,8,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#4b5550";
+  ctx.fillRect(-9,3,18,18);
+
+  ctx.fillStyle="#202625";
+  ctx.fillRect(-12,18,8,7);
+  ctx.fillRect(4,18,8,7);
+
+  ctx.strokeStyle="#c8b75a";
+  ctx.lineWidth=2;
+
+  ctx.beginPath();
+  ctx.arc(0,0,20,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+
+/* =========================
+   WEATHER
+========================= */
+
+function drawWeatherOverlay(){
+
+  if(state.weather==="Метель"){
+
+    ctx.fillStyle="rgba(230,235,228,.16)";
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle="rgba(240,240,235,.35)";
+    ctx.lineWidth=1;
+
+    for(let i=0;i<100;i++){
+
+      const x=Math.random()*W;
+      const y=Math.random()*H;
+
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.lineTo(x-10,y+8);
+      ctx.stroke();
+    }
+  }
+
+  if(state.weather==="Туман"){
+
+    ctx.fillStyle="rgba(210,215,208,.20)";
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+
+/* =========================
+   TERRAIN MOVEMENT
+========================= */
+
+function canMove(x,y){
+
+  if(x<15 || y<15 || x>WORLD_W-15 || y>WORLD_H-15){
+    return false;
+  }
+
+  const t=terrainAt(x,y);
+
+  if(t==="lake"){
+    return false;
+  }
+
+  /* buildings themselves are not walls,
+     only their immediate center */
+
+  for(const loc of locations){
+
+    if(
+      loc.name!=="Озеро" &&
+      loc.name!=="Лес"
+    ){
+
+      const d=Math.hypot(
+        x-loc.x,
+        y-loc.y
+      );
+
+      if(d<16)return false;
+    }
+  }
+
+  return true;
+}
+
+
+/* =========================
+   MOVEMENT
+========================= */
+
+function move(dir){
+
+  let dx=0;
+  let dy=0;
+
+  if(dir==="up")dy=-1;
+  if(dir==="down")dy=1;
+  if(dir==="left")dx=-1;
+  if(dir==="right")dx=1;
+
+  if(state.injury==="Перелом ноги"){
+    dx*=.28;
+    dy*=.28;
+  }
+
+  if(state.injury==="Растяжение голеностопа"){
+    dx*=.58;
+    dy*=.58;
+  }
+
+  const terrain=terrainAt(
+    state.x,
+    state.y
+  );
+
+  let speed=2.8;
+
+  if(terrain==="snow")speed=2.4;
+  if(terrain==="forest")speed=1.75;
+  if(terrain==="rocks")speed=1.35;
+  if(terrain==="slope")speed=1.1;
+  if(terrain==="trail")speed=3.5;
+
+  if(state.fatigue>75)speed*=.65;
+  if(state.weight>state.maxWeight*.8)speed*=.72;
+
+  const nx=state.x+dx*speed;
+  const ny=state.y+dy*speed;
+
+  if(!canMove(nx,ny)){
+
+    target=null;
+    return;
+  }
+
+  state.x=nx;
+  state.y=ny;
+
+  state.stamina-=terrain==="slope"?.16:.07;
+
+  if(state.stamina<0){
+    state.stamina=0;
+    state.fatigue+=.02;
+  }
+
+  movementHazard(terrain);
+
+  checkLocation();
+
+  target=null;
+}
+
+
+/* =========================
+   REALISTIC TERRAIN HAZARD
+========================= */
+
+let hazardTimer=0;
+
+function movementHazard(terrain){
+
+  hazardTimer++;
+
+  if(hazardTimer<35)return;
+
+  hazardTimer=0;
+
+  let risk=0;
+
+  if(terrain==="rocks")risk=.006;
+  if(terrain==="slope")risk=.012;
+  if(terrain==="snow")risk=.002;
+
+  if(state.fatigue>70)risk*=2.2;
+
+  if(state.weight>state.maxWeight*.85)risk*=1.8;
+
+  if(state.weather==="Метель")risk*=1.7;
+
+  if(state.injury)risk*=1.5;
+
+  if(Math.random()<risk){
+
+    const r=Math.random();
+
+    if(r<.70){
+
+      if(!state.injury){
+        state.injury="Растяжение голеностопа";
+        showMessage(
+          "ТРАВМА",
+          "Ты неудачно поставил ногу. Голеностоп подвернулся."
+        );
+      }
+
+    }else if(r<.94){
+
+      if(!state.injury){
+        state.injury="Ушиб ноги";
+        state.health-=4;
+
+        showMessage(
+          "ПАДЕНИЕ",
+          "Ты поскользнулся на неровной поверхности и сильно ударил ногу."
+        );
+      }
+
+    }else{
+
+      if(!state.injury){
+
+        state.injury="Перелом ноги";
+        state.health-=20;
+
+        showMessage(
+          "ТЯЖЁЛАЯ ТРАВМА",
+          "Ты сорвался на склоне. Нога сломана."
+        );
+      }
+    }
+  }
+}
+
+
+/* =========================
+   LOCATION
+========================= */
+
+function checkLocation(){
+
+  let nearest=null;
+  let best=9999;
+
+  locations.forEach(loc=>{
+
+    const d=Math.hypot(
+      state.x-loc.x,
+      state.y-loc.y
+    );
+
+    if(d<loc.r+35 && d<best){
+      nearest=loc;
+      best=d;
+    }
+  });
+
+  if(nearest){
+
+    state.location=nearest.name;
+
+    if(
+      !state.discovered.includes(nearest.name)
+    ){
+      state.discovered.push(nearest.name);
+
+      showMessage(
+        "НОВОЕ МЕСТО",
+        nearest.name
+      );
+    }
+
+  }else{
+
+    state.location="Mystery Lake";
+  }
+}
+
+
+/* =========================
+   TARGET MOVEMENT
+========================= */
+
+function moveToTarget(){
+
+  if(!target)return;
+
+  const dx=target.x-state.x;
+  const dy=target.y-state.y;
+
+  if(Math.hypot(dx,dy)<10){
+
+    target=null;
+    return;
+  }
+
+  if(Math.abs(dx)>Math.abs(dy)){
+
+    move(dx>0?"right":"left");
+
+  }else{
+
+    move(dy>0?"down":"up");
+  }
+}
+
+
+/* =========================
+   MAP TOUCH / MOUSE
+========================= */
+
+canvas.addEventListener("pointerdown",e=>{
+
+  const rect=canvas.getBoundingClientRect();
+
+  const sx=e.clientX-rect.left;
+  const sy=e.clientY-rect.top;
+
+  target={
+    x:sx+camera.x,
+    y:sy+camera.y
+  };
+
+  const targetLabel=
+    document.getElementById("targetLabel");
+
+  targetLabel.classList.add("show");
+
+  setTimeout(()=>{
+    targetLabel.classList.remove("show");
+  },700);
+});
+
+
+/* =========================
+   ARROW CONTROLS
+========================= */
+
+document.querySelectorAll(".arrow").forEach(btn=>{
+
+  let timer=null;
+
+  const dir=btn.dataset.dir;
+
+  function start(e){
+
+    e.preventDefault();
+
+    btn.classList.add("active");
+
+    move(dir);
+
+    timer=setInterval(()=>{
+      move(dir);
+    },45);
+  }
+
+  function stop(e){
+
+    if(e)e.preventDefault();
+
+    btn.classList.remove("active");
+
+    if(timer){
+      clearInterval(timer);
+      timer=null;
+    }
+  }
+
+  btn.addEventListener("pointerdown",start);
+  btn.addEventListener("pointerup",stop);
+  btn.addEventListener("pointercancel",stop);
+  btn.addEventListener("pointerleave",e=>{
+    if(timer)stop(e);
+  });
+});
+
+
+/* =========================
+   KEYBOARD OPTIONAL
+========================= */
+
+window.addEventListener("keydown",e=>{
+
+  if(e.repeat)return;
+
+  keys[e.key.toLowerCase()]=true;
+
+  if(e.key==="ArrowUp" || e.key.toLowerCase()==="w"){
+    move("up");
+  }
+
+  if(e.key==="ArrowDown" || e.key.toLowerCase()==="s"){
+    move("down");
+  }
+
+  if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a"){
+    move("left");
+  }
+
+  if(e.key==="ArrowRight" || e.key.toLowerCase()==="d"){
+    move("right");
+  }
+});
+
+window.addEventListener("keyup",e=>{
+  keys[e.key.toLowerCase()]=false;
+});
+
+
+/* =========================
+   TIME / SURVIVAL
+========================= */
+
+let survivalAccumulator=0;
+
+function gameTick(){
+
+  if(
+    document.getElementById("game").style.display!=="flex"
+  ){
+    return;
+  }
+
+  state.minutes+=2;
+
+  if(state.minutes>=1440){
+
+    state.minutes-=1440;
+    state.day++;
+  }
+
+  /* hunger */
+
+  state.hunger-=.025;
+
+  /* thirst */
+
+  state.thirst-=.045;
+
+  /* fatigue */
+
+  state.fatigue+=.018;
+
+  /* stamina */
+
+  if(state.fatigue<65){
+    state.stamina+=.04;
+  }
+
+  if(state.stamina>100)state.stamina=100;
+
+  /* cold */
+
+  const outside=
+    state.bodyTemp;
+
+  let coldDamage=0;
+
+  if(
+    state.bodyTemp<
+    -10
+  ){
+    coldDamage=.015;
+  }
+
+  if(state.weather==="Метель"){
+    coldDamage*=2.5;
+  }
+
+  if(
+    state.fire.active &&
+    Math.hypot(
+      state.x- state.fire.x,
+      state.y- state.fire.y
+    )<100
+  ){
+    coldDamage=0;
+  }
+
+  state.health-=coldDamage;
+
+  /* starvation */
+
+  if(state.hunger<=0){
+    state.health-=.025;
+  }
+
+  /* dehydration */
+
+  if(state.thirst<=0){
+    state.health-=.045;
+  }
+
+  /* limits */
+
+  state.hunger=Math.max(0,Math.min(100,state.hunger));
+  state.thirst=Math.max(0,Math.min(100,state.thirst));
+  state.stamina=Math.max(0,Math.min(100,state.stamina));
+  state.fatigue=Math.max(0,Math.min(100,state.fatigue));
+  state.health=Math.max(0,Math.min(100,state.health));
+
+  weatherTick();
+  animalTick();
+  fireTick();
+
+  updateUI();
+
+  if(state.health<=0){
+
+    gameOver();
+  }
+}
+
+setInterval(gameTick,1000);
+
+
+/* =========================
+   WEATHER
+========================= */
+
+let weatherTimer=0;
+
+function weatherTick(){
+
+  weatherTimer++;
+
+  if(weatherTimer<90)return;
+
+  weatherTimer=0;
+
+  const r=Math.random();
+
+  if(r<.55){
+
+    state.weather="Ясно";
+    state.bodyTemp=-7-Math.random()*5;
+    state.wind=1+Math.floor(Math.random()*3);
+
+  }else if(r<.78){
+
+    state.weather="Снег";
+    state.bodyTemp=-10-Math.random()*5;
+    state.wind=3;
+
+  }else if(r<.93){
+
+    state.weather="Туман";
+    state.bodyTemp=-8;
+    state.wind=2;
+
+  }else{
+
+    state.weather="Метель";
+    state.bodyTemp=-16-Math.random()*8;
+    state.wind=7;
+  }
+}
+
+
+/* =========================
+   ANIMALS
+========================= */
+
+function animalTick(){
+
+  animals.forEach(a=>{
+
+    if(!a.alive)return;
+
+    a.wander++;
+
+    if(a.wander<12)return;
+
+    a.wander=0;
+
+    const angle=Math.random()*Math.PI*2;
+
+    const speed=
+      a.type==="wolf"?7:4;
+
+    const nx=
+      a.x+Math.cos(angle)*speed;
+
+    const ny=
+      a.y+Math.sin(angle)*speed;
+
+    if(
+      nx>30 &&
+      ny>30 &&
+      nx<WORLD_W-30 &&
+      ny<WORLD_H-30 &&
+      terrainAt(nx,ny)!=="lake"
+    ){
+      a.x=nx;
+      a.y=ny;
+    }
+
+    /* wolf danger */
+
+    if(a.type==="wolf"){
+
+      const d=Math.hypot(
+        a.x-state.x,
+        a.y-state.y
+      );
+
+      if(d<55){
+
+        if(Math.random()<.05){
+
+          state.health-=8;
+
+          showMessage(
+            "ВОЛК",
+            "Волк бросился на тебя. Ты получил ранение."
+          );
+        }
+      }
+    }
+  });
+}
+
+
+/* =========================
+   FIRE
+========================= */
+
+function fireTick(){
+
+  if(!state.fire.active)return;
+
+  state.fire.fuel-=.04;
+
+  state.fire.temp=state.fire.fuel*2;
+
+  if(state.fire.fuel<=0){
+
+    state.fire.active=false;
+    state.fire.fuel=0;
+  }
+
+  if(
+    state.fire.active &&
+    Math.hypot(
+      state.x-state.fire.x,
+      state.y-state.fire.y
+    )<100
+  ){
+
+    state.bodyTemp=
+      Math.min(
+        state.bodyTemp+1.2,
+        5
+      );
+  }
+}
+
+
+/* =========================
+   UI
+========================= */
+
+function updateUI(){
+
+  document.getElementById("health").textContent=
+    Math.round(state.health);
+
+  document.getElementById("hunger").textContent=
+    Math.round(state.hunger);
+
+  document.getElementById("thirst").textContent=
+    Math.round(state.thirst);
+
+  document.getElementById("stamina").textContent=
+    Math.round(state.stamina);
+
+  document.getElementById("healthFill").style.width=
+    state.health+"%";
+
+  document.getElementById("hungerFill").style.width=
+    state.hunger+"%";
+
+  document.getElementById("thirstFill").style.width=
+    state.thirst+"%";
+
+  document.getElementById("staminaFill").style.width=
+    state.stamina+"%";
+
+  const hours=
+    Math.floor(state.minutes/60)
+      .toString()
+      .padStart(2,"0");
+
+  const mins=
+    (state.minutes%60)
+      .toString()
+      .padStart(2,"0");
+
+  document.getElementById("clock").textContent=
+    `${hours}:${mins}`;
+
+  document.getElementById("dateText").textContent=
+    `День ${state.day}`;
+
+  document.getElementById("locationLabel").textContent=
+    "📍 "+state.location;
+
+  document.getElementById("weatherLabel").textContent=
+    `${state.weather} · ${Math.round(state.bodyTemp)}°C · ветер ${state.wind}`;
+
+  document.getElementById("coords").textContent=
+    `X: ${Math.round(state.x)} · Y: ${Math.round(state.y)}`;
+}
+
+
+/* =========================
+   INVENTORY
+========================= */
+
+function openInventory(){
+
+  let html=`
+    <button class="close" onclick="closePanel()">×</button>
+    <h2>🎒 РЮКЗАК</h2>
+    <div class="item-info">
+      Вес: ${state.weight.toFixed(1)} / ${state.maxWeight} кг
+    </div>
+  `;
+
+  state.inventory.forEach((item,index)=>{
+
+    html+=`
+      <div class="item">
+
+        <div>
+          <div class="item-name">
+            ${item.name}
+          </div>
+
+          <div class="item-info">
+            Количество: ${item.amount}
+            · ${item.weight} кг
+          </div>
+        </div>
+
+        <button
+          class="action"
+          onclick="useItem(${index})">
+          Использовать
+        </button>
+
+      </div>
+    `;
+  });
+
+  openPanel(html);
+}
+
+
+function useItem(index){
+
+  const item=state.inventory[index];
+
+  if(!item)return;
+
+  if(item.id==="water"){
+
+    state.thirst=
+      Math.min(100,state.thirst+30);
+
+    removeItem(index);
+
+    showMessage(
+      "ВОДА",
+      "Ты выпил воду."
+    );
+
+  }else if(item.id==="jerky"){
+
+    state.hunger=
+      Math.min(100,state.hunger+25);
+
+    removeItem(index);
+
+    showMessage(
+      "ЕДА",
+      "Ты съел вяленое мясо."
+    );
+
+  }else if(item.id==="bandage"){
+
+    if(state.injury){
+
+      state.injury=null;
+      removeItem(index);
+
+      showMessage(
+        "МЕДИЦИНА",
+        "Ты обработал травму."
+      );
+
+    }else{
+
+      showMessage(
+        "БИНТ",
+        "Сейчас бинт не требуется."
+      );
+    }
+
+  }else if(item.id==="pain"){
+
+    if(
+      state.injury==="Растяжение голеностопа"
+    ){
+
+      state.injury=null;
+      removeItem(index);
+
+      showMessage(
+        "ОБЕЗБОЛИВАЮЩЕЕ",
+        "Боль временно уменьшилась."
+      );
+
+    }else{
+
+      showMessage(
+        "ОБЕЗБОЛИВАЮЩЕЕ",
+        "Сейчас это не поможет."
+      );
+    }
+
+  }else{
+
+    showMessage(
+      item.name,
+      "Этот предмет пока нельзя использовать здесь."
+    );
+  }
+
+  updateWeight();
+  updateUI();
+}
+
+
+/* =========================
+   REMOVE ITEM
+========================= */
+
+function removeItem(index){
+
+  const item=state.inventory[index];
+
+  if(item.amount>1){
+
+    item.amount--;
+
+  }else{
+
+    state.inventory.splice(index,1);
+  }
+}
+
+
+/* =========================
+   WEIGHT
+========================= */
+
+function updateWeight(){
+
+  state.weight=
+    state.inventory.reduce(
+      (sum,item)=>
+        sum+item.weight*item.amount,
+      0
+    );
+}
+
+
+/* =========================
+   INSPECT
+========================= */
+
+function inspectPlayer(){
+
+  let injury=
+    state.injury
+      ? state.injury
+      : "нет";
+
+  showMessage(
+    "СОСТОЯНИЕ",
+    `Здоровье: ${Math.round(state.health)}%<br>
+     Усталость: ${Math.round(state.fatigue)}%<br>
+     Температура: ${Math.round(state.bodyTemp)}°C<br>
+     Травмы: ${injury}<br>
+     Вес: ${state.weight.toFixed(1)} кг`
+  );
+}
+
+
+/* =========================
+   INTERACTION
+========================= */
+
+function interact(){
+
+  let nearest=null;
+  let best=70;
+
+  locations.forEach(loc=>{
+
+    const d=Math.hypot(
+      state.x-loc.x,
+      state.y-loc.y
+    );
+
+    if(d<best){
+
+      best=d;
+      nearest=loc;
+    }
+  });
+
+  if(nearest){
+
+    showMessage(
+      nearest.name,
+      nearest.description+
+      "<br><br>Здесь можно исследовать местность."
+    );
+
+    return;
+  }
+
+  const nearbyAnimal=
+    animals.find(a=>
+      a.alive &&
+      Math.hypot(
+        a.x-state.x,
+        a.y-state.y
+      )<80
+    );
+
+  if(nearbyAnimal){
+
+    showMessage(
+      "СЛЕДЫ",
+      nearbyAnimal.type==="wolf"
+        ? "Недалеко находится волк."
+        : "Ты заметил кролика."
+    );
+
+    return;
+  }
+
+  showMessage(
+    "ОКРЕСТНОСТИ",
+    `Местность: ${terrainAt(state.x,state.y)}.<br>
+     Здесь пока ничего интересного не найдено.`
+  );
+}
+
+
+/* =========================
+   FIRE ACTION
+========================= */
+
+function makeFire(){
+
+  const matches=
+    state.inventory.find(i=>i.id==="matches");
+
+  if(!matches || matches.amount<=0){
+
+    showMessage(
+      "КОСТЁР",
+      "Нет спичек."
+    );
+
+    return;
+  }
+
+  if(state.fire.active){
+
+    state.fire.fuel+=30;
+
+    showMessage(
+      "КОСТЁР",
+      "Ты добавил топливо."
+    );
+
+    return;
+  }
+
+  matches.amount--;
+
+  state.fire={
+    active:true,
+    fuel:45,
+    temp:30,
+    x:state.x,
+    y:state.y
+  };
+
+  showMessage(
+    "КОСТЁР",
+    "Костёр разгорелся."
+  );
+}
+
+
+/* =========================
+   MAP INFO
+========================= */
+
+function openMapInfo(){
+
+  let list=
+    state.discovered
+      .map(x=>`• ${x}`)
+      .join("<br>");
+
+  openPanel(`
+    <button class="close" onclick="closePanel()">×</button>
+
+    <h2>🗺 КАРТА</h2>
+
+    <div class="item">
+      <span>Исследовано</span>
+      <strong>${state.discovered.length}</strong>
+    </div>
+
+    <p style="color:#aaa">
+      Двигайся стрелками по карте.
+      Тропы безопаснее и быстрее.
+      Лес замедляет движение.
+      Камни и крутые склоны опасны.
+    </p>
+
+    <h3 style="color:#c8b45a">
+      Известные места
+    </h3>
+
+    <p>${list}</p>
+  `);
+}
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+function openSettings(){
+
+  openPanel(`
+    <button class="close" onclick="closePanel()">×</button>
+
+    <h2>⚙ НАСТРОЙКИ</h2>
+
+    <div class="item">
+      <span>Звук</span>
+      <button class="action"
+        onclick="toggleSetting('sound')">
+        ${state.settings.sound?"ВКЛ":"ВЫКЛ"}
+      </button>
+    </div>
+
+    <div class="item">
+      <span>Анимации</span>
+      <button class="action"
+        onclick="toggleSetting('animations')">
+        ${state.settings.animations?"ВКЛ":"ВЫКЛ"}
+      </button>
+    </div>
+
+    <div class="item">
+      <span>Управление</span>
+      <span class="item-info">
+        мышь / тач / стрелки
+      </span>
+    </div>
+  `);
+}
+
+
+function toggleSetting(key){
+
+  state.settings[key]=
+    !state.settings[key];
+
+  openSettings();
+}
+
+
+/* =========================
+   PANEL
+========================= */
+
+function openPanel(html){
+
+  document.getElementById("panel").innerHTML=html;
+
+  document.getElementById("panelOverlay").style.display=
+    "flex";
+}
+
+
+function closePanel(e){
+
+  if(
+    e &&
+    e.target!==document.getElementById("panelOverlay")
+  ){
+    return;
+  }
+
+  document.getElementById("panelOverlay").style.display=
+    "none";
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+let messageTimer=null;
+
+function showMessage(title,text){
+
+  const box=
+    document.getElementById("message");
+
+  document.getElementById("messageTitle")
+    .textContent=title;
+
+  document.getElementById("messageText")
+    .innerHTML=text;
+
+  box.style.display="block";
+
+  clearTimeout(messageTimer);
+
+  messageTimer=setTimeout(()=>{
+    box.style.display="none";
+  },3000);
+}
+
+
+/* =========================
+   SAVE
+========================= */
+
+function saveGame(){
+
+  updateWeight();
+
+  localStorage.setItem(
+    "TLD_MYSTERY_LAKE_SAVE",
+    JSON.stringify(state)
+  );
+
+  showMessage(
+    "СОХРАНЕНИЕ",
+    "Игра сохранена."
+  );
+}
+
+
+/* =========================
+   LOAD
+========================= */
+
+function loadGame(){
+
+  const saved=
+    localStorage.getItem(
+      "TLD_MYSTERY_LAKE_SAVE"
+    );
+
+  if(!saved)return false;
+
+  try{
+
+    state=
+      Object.assign(
+        structuredClone(defaultState),
+        JSON.parse(saved)
+      );
+
+    updateWeight();
+
+    return true;
+
+  }catch(e){
+
+    console.error(e);
+    return false;
+  }
+}
+
+
+/* =========================
+   NEW GAME
+========================= */
+
+function newGame(){
+
+  state=structuredClone(defaultState);
+
+  target=null;
+
+  document.getElementById("menu").style.display="none";
+
+  document.getElementById("game").style.display="flex";
+
+  resizeCanvas();
+
+  updateUI();
+
+  showMessage(
+    "MYSTERY LAKE",
+    "Ты очнулся среди заснеженной дикой местности.<br><br>Выживай."
+  );
+}
+
+
+/* =========================
+   CONTINUE
+========================= */
+
+function continueGame(){
+
+  if(loadGame()){
+
+    document.getElementById("menu").style.display="none";
+
+    document.getElementById("game").style.display="flex";
+
+    resizeCanvas();
+
+    updateUI();
+
+    showMessage(
+      "ПРОДОЛЖЕНИЕ",
+      `День ${state.day}, ${formatTime()}.`
+    );
+
+  }else{
+
+    showMessage(
+      "НЕТ СОХРАНЕНИЯ",
+      "Сохранение не найдено. Начни новую игру."
+    );
+  }
+}
+
+
+/* =========================
+   FORMAT TIME
+========================= */
+
+function formatTime(){
+
+  const h=
+    Math.floor(state.minutes/60)
+      .toString()
+      .padStart(2,"0");
+
+  const m=
+    (state.minutes%60)
+      .toString()
+      .padStart(2,"0");
+
+  return `${h}:${m}`;
+}
+
+
+/* =========================
+   ABOUT
+========================= */
+
+function showAbout(){
+
+  openPanel(`
+    <button class="close" onclick="closePanel()">×</button>
+
+    <h2>THE LONG DARK</h2>
+
+    <p>
+      Браузерная survival-версия с упором
+      на исследование Mystery Lake.
+    </p>
+
+    <p style="color:#aaa">
+      Карта визуальная. Персонаж имеет реальные
+      координаты. Направление задаётся стрелками.
+    </p>
+
+    <p style="color:#aaa">
+      Погода, холод, голод, жажда, усталость,
+      вес рюкзака, животные, травмы и местность
+      влияют на выживание.
+    </p>
+  `);
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function gameOver(){
+
+  document.getElementById("game").style.display="none";
+
+  document.getElementById("menu").style.display="flex";
+
+  showMessage(
+    "КОНЕЦ",
+    "Ты погиб в дикой местности.<br>Начни новую игру."
+  );
+}
+
+
+/* =========================
+   EXIT
+========================= */
+
+function exitGame(){
+
+  document.getElementById("game").style.display="none";
+  document.getElementById("menu").style.display="flex";
+}
+
+
+/* =========================
+   COMMAND SYSTEM
+========================= */
+
+const commandInput=
+  document.getElementById("commandInput");
+
+commandInput.addEventListener("keydown",e=>{
+
+  if(e.key!=="Enter")return;
+
+  const text=
+    commandInput.value
+      .trim()
+      .toLowerCase();
+
+  commandInput.value="";
+
+  if(!text)return;
+
+  command(text);
+});
+
+
+function command(text){
+
+  if(
+    text.includes("инвентарь") ||
+    text.includes("рюкзак")
+  ){
+
+    openInventory();
+    return;
+  }
+
+  if(
+    text.includes("осмотреть") ||
+    text.includes("осмотр")
+  ){
+
+    interact();
+    return;
+  }
+
+  if(
+    text.includes("костер") ||
+    text.includes("костёр")
+  ){
+
+    makeFire();
+    return;
+  }
+
+  if(
+    text.includes("сохран")
+  ){
+
+    saveGame();
+    return;
+  }
+
+  if(text.includes("север")){
+
+    move("up");
+    return;
+  }
+
+  if(text.includes("юг")){
+
+    move("down");
+    return;
+  }
+
+  if(text.includes("запад")){
+
+    move("left");
+    return;
+  }
+
+  if(text.includes("восток")){
+
+    move("right");
+    return;
+  }
+
+  showMessage(
+    "КОМАНДА",
+    "Не удалось понять команду."
+  );
+}
+
+
+/* =========================
+   AUTO TARGET
+========================= */
 
 setInterval(()=>{
- if(gamePaused)return;
- updateFire(.1);
-},100);
+  moveToTarget();
+},80);
 
-addEventListener("keydown",e=>{
- keys[e.key]=true;
- if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
-
- if(e.key==="i"||e.key==="I")openInventory();
- if(e.key==="m"||e.key==="M")openMapInfo();
-});
-addEventListener("keyup",e=>keys[e.key]=false);
-
-/* Mobile controls */
-function hold(id,key){
- const el=document.getElementById(id);
- ["pointerdown"].forEach(ev=>el.addEventListener(ev,e=>{
-  e.preventDefault();keys[key]=true;
- }));
- ["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,e=>{
-  e.preventDefault();keys[key]=false;
- }));
-}
-hold("up","ArrowUp");hold("down","ArrowDown");hold("left","ArrowLeft");hold("right","ArrowRight");
 
 /* =========================
-   START
+   INITIALIZATION
 ========================= */
-loadGame();
-spawnAnimals();
+
+resizeCanvas();
+updateWeight();
 updateUI();
 draw();
-requestAnimationFrame(tick);
+
+
+/* =========================
+   PERIODIC AUTOSAVE
+========================= */
+
+setInterval(()=>{
+
+  if(
+    document.getElementById("game").style.display==="flex"
+  ){
+
+    localStorage.setItem(
+      "TLD_MYSTERY_LAKE_AUTOSAVE",
+      JSON.stringify(state)
+    );
+  }
+
+},60000);
 
 </script>
+
 </body>
 </html>
