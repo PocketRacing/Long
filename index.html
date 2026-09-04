@@ -3,2936 +3,2151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WHITEOUT — Text Survival</title>
+<title>СЕВЕР — Выживание</title>
 
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
 
-body{
- margin:0;
- background:#050a0d;
- color:#d9e2e5;
- font-family:Arial,Helvetica,sans-serif;
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#071015;
+    color:#e8e7df;
+    font-family:Arial,Helvetica,sans-serif;
 }
 
 button{
- font:inherit;
+    font:inherit;
+    color:inherit;
 }
 
-.app{
- max-width:850px;
- margin:auto;
- min-height:100vh;
- padding:12px;
+#game{
+    position:relative;
+    width:100%;
+    height:100%;
+    overflow:hidden;
 }
 
-header{
- padding:10px 4px 14px;
- border-bottom:1px solid #26353b;
- margin-bottom:12px;
+/* =========================================================
+   MAP
+========================================================= */
+
+#mapScreen{
+    position:absolute;
+    inset:0;
+    background:#111;
+    overflow:hidden;
 }
 
-.logo{
- font-size:28px;
- font-weight:900;
- letter-spacing:6px;
+#world{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:1600px;
+    height:1067px;
+
+    background-image:url("картинки/карта_местности.png");
+    background-size:100% 100%;
+    background-repeat:no-repeat;
+
+    transform:translate(-50%,-50%);
+    transform-origin:center;
+    transition:transform .12s linear;
+    filter:saturate(.72) contrast(1.05);
 }
 
-.sub{
- color:#71858c;
- font-size:10px;
- letter-spacing:3px;
- margin-top:3px;
+/* лёгкое затемнение карты */
+#mapScreen:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+        radial-gradient(circle at center,
+            transparent 35%,
+            rgba(0,0,0,.15) 65%,
+            rgba(0,0,0,.58) 100%);
 }
 
-.stats{
- display:grid;
- grid-template-columns:repeat(5,1fr);
- gap:5px;
- margin-top:12px;
+/* координаты игрока */
+#player{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:28px;
+    height:28px;
+    margin:-14px 0 0 -14px;
+    z-index:20;
+}
+
+.playerDot{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    border:2px solid white;
+    background:#bfad73;
+    box-shadow:
+        0 0 0 6px rgba(190,175,115,.15),
+        0 0 20px rgba(255,255,255,.45);
+}
+
+.playerArrow{
+    position:absolute;
+    left:50%;
+    top:-22px;
+    transform:translateX(-50%);
+    font-size:16px;
+}
+
+/* =========================================================
+   TOP HUD
+========================================================= */
+
+#topHud{
+    position:absolute;
+    left:0;
+    right:0;
+    top:0;
+    z-index:50;
+    padding:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    pointer-events:none;
+}
+
+.hudBox{
+    background:rgba(5,10,13,.83);
+    border:1px solid rgba(255,255,255,.14);
+    backdrop-filter:blur(8px);
+    box-shadow:0 5px 20px rgba(0,0,0,.35);
+    padding:9px 12px;
+}
+
+#locationName{
+    font-size:17px;
+    font-weight:bold;
+    letter-spacing:.5px;
+}
+
+#locationSub{
+    color:#9ea7a6;
+    font-size:11px;
+    margin-top:3px;
+}
+
+#clock{
+    text-align:right;
+    font-size:16px;
+}
+
+#weatherText{
+    font-size:11px;
+    color:#aeb8b6;
+    margin-top:3px;
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+#status{
+    position:absolute;
+    z-index:55;
+    top:82px;
+    right:12px;
+    width:170px;
+    background:rgba(5,10,13,.82);
+    border:1px solid rgba(255,255,255,.13);
+    padding:9px;
 }
 
 .stat{
- background:#0b151a;
- border:1px solid #1c2c32;
- border-radius:7px;
- padding:7px 3px;
- text-align:center;
+    margin-bottom:7px;
 }
 
-.stat small{
- display:block;
- color:#71848b;
- font-size:8px;
- margin-bottom:4px;
+.stat:last-child{
+    margin-bottom:0;
 }
 
-.stat b{
- font-size:11px;
+.statLine{
+    display:flex;
+    justify-content:space-between;
+    font-size:10px;
+    color:#aeb6b4;
+    margin-bottom:3px;
 }
 
 .bar{
- height:4px;
- background:#18262c;
- border-radius:5px;
- overflow:hidden;
- margin-top:5px;
+    height:5px;
+    background:#263035;
+    overflow:hidden;
 }
 
 .bar i{
- display:block;
- height:100%;
- width:50%;
- background:#9cb7be;
+    display:block;
+    height:100%;
+    width:100%;
+    background:#c4b47b;
 }
 
-.card{
- background:#091419;
- border:1px solid #203139;
- border-radius:10px;
- overflow:hidden;
- margin-bottom:10px;
+/* =========================================================
+   MAP CONTROLS
+========================================================= */
+
+#controls{
+    position:absolute;
+    z-index:70;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    display:grid;
+    grid-template-columns:60px 60px 60px;
+    grid-template-rows:60px 60px;
+    gap:7px;
 }
 
-.top{
- display:flex;
- justify-content:space-between;
- gap:10px;
- padding:12px;
- border-bottom:1px solid #1d2d34;
+.move{
+    border:1px solid rgba(255,255,255,.25);
+    background:rgba(7,13,16,.82);
+    font-size:27px;
+    cursor:pointer;
+    user-select:none;
+    box-shadow:0 5px 20px rgba(0,0,0,.3);
 }
 
-.loc{
- font-weight:bold;
- font-size:15px;
+.move:active{
+    background:#374047;
+    transform:scale(.94);
 }
 
-.clock{
- text-align:right;
- color:#80939a;
- font-size:10px;
- line-height:1.5;
+.up{grid-column:2}
+.left{grid-column:1;grid-row:2}
+.down{grid-column:2;grid-row:2}
+.right{grid-column:3;grid-row:2}
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+#actions{
+    position:absolute;
+    z-index:60;
+    left:12px;
+    bottom:18px;
+    display:flex;
+    gap:7px;
 }
 
-.story{
- padding:17px;
- min-height:260px;
- line-height:1.65;
+.action{
+    min-width:52px;
+    height:52px;
+    border:1px solid rgba(255,255,255,.17);
+    background:rgba(5,10,13,.84);
+    cursor:pointer;
 }
 
-.story h2{
- margin:0 0 14px;
- font-size:19px;
- color:#f0f5f6;
+.action span{
+    display:block;
+    font-size:20px;
 }
 
-.story p{
- white-space:pre-line;
- color:#b7c5ca;
- font-size:14px;
+.action small{
+    font-size:9px;
+    color:#aab1ae;
 }
 
-.choicebox{
- padding:10px;
- border-top:1px solid #1d2d34;
- display:grid;
- gap:7px;
+/* =========================================================
+   MAP MARKERS
+========================================================= */
+
+.marker{
+    position:absolute;
+    z-index:10;
+    transform:translate(-50%,-50%);
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:rgba(8,14,17,.8);
+    border:1px solid rgba(255,255,255,.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    cursor:pointer;
 }
 
-.choice{
- width:100%;
- padding:13px;
- border:1px solid #2b424a;
- border-radius:8px;
- background:#102129;
- color:#dce7e9;
- text-align:left;
- cursor:pointer;
+.marker:hover{
+    background:#384047;
 }
 
-.choice:active{
- transform:scale(.985);
+.markerLabel{
+    position:absolute;
+    top:37px;
+    white-space:nowrap;
+    font-size:9px;
+    color:#eee;
+    text-shadow:0 2px 4px #000;
 }
 
-.choice:hover{
- background:#17313a;
-}
-
-.choice:disabled{
- opacity:.35;
-}
-
-.tools{
- display:grid;
- grid-template-columns:repeat(3,1fr);
- gap:7px;
- margin-bottom:10px;
-}
-
-.tool{
- padding:11px 5px;
- border-radius:8px;
- border:1px solid #243940;
- background:#0c191e;
- color:#b9c8cc;
- cursor:pointer;
- font-size:11px;
-}
-
-.tool:hover{
- background:#14272e;
-}
-
-.log{
- background:#081217;
- border:1px solid #1d2d34;
- border-radius:9px;
- padding:12px;
-}
-
-.log h3{
- margin:0 0 8px;
- font-size:13px;
-}
-
-.logline{
- padding:7px 0;
- border-bottom:1px solid #17262c;
- color:#71868d;
- font-size:11px;
-}
-
-.logline:first-child{
- color:#c0cdd1;
-}
+/* =========================================================
+   PANELS / MODALS
+========================================================= */
 
 .overlay{
- position:fixed;
- inset:0;
- z-index:50;
- background:#000b;
- display:none;
- align-items:center;
- justify-content:center;
- padding:15px;
+    position:absolute;
+    inset:0;
+    z-index:200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.66);
+    backdrop-filter:blur(5px);
 }
 
-.modal{
- width:min(650px,100%);
- max-height:90vh;
- overflow:auto;
- background:#09151a;
- border:1px solid #30464e;
- border-radius:11px;
+.overlay.open{
+    display:flex;
 }
 
-.modalhead{
- display:flex;
- justify-content:space-between;
- align-items:center;
- padding:13px;
- border-bottom:1px solid #21333a;
+.panel{
+    width:min(720px,94vw);
+    max-height:90vh;
+    overflow:auto;
+    background:#10171a;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:0 20px 70px rgba(0,0,0,.65);
 }
 
-.modalhead b{
- font-size:15px;
+.panelHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.panelHeader h2{
+    margin:0;
+    font-size:18px;
 }
 
 .close{
- background:#182930;
- color:#d4e0e3;
- border:0;
- border-radius:6px;
- width:32px;
- height:32px;
- cursor:pointer;
+    width:35px;
+    height:35px;
+    border:0;
+    background:#252d31;
+    cursor:pointer;
 }
 
-.modalbody{
- padding:13px;
+.panelBody{
+    padding:15px;
 }
 
-.items{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:7px;
+/* =========================================================
+   INVENTORY
+========================================================= */
+
+.inventoryGrid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
 }
 
 .item{
- padding:10px;
- background:#0e2026;
- border:1px solid #20383f;
- border-radius:7px;
+    min-height:82px;
+    background:#192125;
+    border:1px solid rgba(255,255,255,.08);
+    padding:8px;
+    cursor:pointer;
 }
 
-.item b{
- font-size:12px;
+.item:hover{
+    border-color:#aaa;
 }
 
-.item span{
- float:right;
- color:#9fb7bd;
+.itemIcon{
+    font-size:28px;
 }
 
-.item small{
- display:block;
- color:#72878e;
- font-size:9px;
- margin-top:5px;
+.itemName{
+    font-size:10px;
+    margin-top:5px;
 }
 
-.map{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:7px;
+.itemCount{
+    color:#9fa8a6;
+    font-size:9px;
 }
 
-.map button{
- min-height:70px;
- text-align:left;
- padding:10px;
- background:#0e2026;
- color:#d6e2e5;
- border:1px solid #263d44;
- border-radius:7px;
- cursor:pointer;
+/* =========================================================
+   INTERIOR
+========================================================= */
+
+#interiorScreen{
+    position:absolute;
+    inset:0;
+    z-index:150;
+    display:none;
+    background:
+        radial-gradient(circle at 50% 25%,
+            rgba(190,160,105,.17),
+            transparent 30%),
+        linear-gradient(
+            180deg,
+            #242b2d 0%,
+            #171d1f 55%,
+            #0d1214 100%);
 }
 
-.map button:disabled{
- opacity:.3;
+#interiorScreen.open{
+    display:block;
 }
 
-.recipe{
- padding:11px;
- background:#0e2026;
- border:1px solid #22373e;
- border-radius:7px;
- margin-bottom:7px;
+.room{
+    position:absolute;
+    inset:0;
 }
 
-.recipe b{
- font-size:12px;
+/* стены */
+.wall{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:43%;
+    background:
+        linear-gradient(90deg,
+            rgba(0,0,0,.3),
+            transparent,
+            rgba(0,0,0,.4)),
+        repeating-linear-gradient(
+            90deg,
+            #343a39 0,
+            #343a39 70px,
+            #303634 71px,
+            #303634 140px);
+    border-bottom:4px solid #161a1a;
 }
 
-.recipe small{
- display:block;
- color:#73888f;
- margin:5px 0;
+/* пол */
+.floor{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:59%;
+    background:
+        repeating-linear-gradient(
+            8deg,
+            #292b29 0,
+            #292b29 45px,
+            #222523 46px,
+            #222523 90px);
+    transform:perspective(500px) rotateX(18deg);
+    transform-origin:bottom;
 }
 
-.recipe button{
- padding:7px 10px;
- background:#172e36;
- border:1px solid #38535c;
- color:#dbe6e8;
- border-radius:6px;
- cursor:pointer;
+/* предметы комнаты */
+.roomObject{
+    position:absolute;
+    z-index:5;
+    border:1px solid rgba(255,255,255,.12);
+    cursor:pointer;
+    transition:.15s;
 }
 
-.recipe button:disabled{
- opacity:.35;
+.roomObject:hover{
+    filter:brightness(1.3);
 }
 
-#start,
-#death,
-#ending{
- position:fixed;
- inset:0;
- z-index:100;
- background:
- radial-gradient(circle at 50% 30%,#203b44,#081217 48%,#020507);
- display:flex;
- justify-content:center;
- align-items:center;
- padding:18px;
+.table{
+    width:250px;
+    height:110px;
+    left:50%;
+    top:58%;
+    transform:translate(-50%,-50%);
+    background:#4a3828;
+    box-shadow:0 25px 20px rgba(0,0,0,.4);
 }
 
-#death,#ending{
- display:none;
+.bed{
+    width:270px;
+    height:90px;
+    left:14%;
+    top:57%;
+    background:#39474a;
+    box-shadow:0 20px 20px rgba(0,0,0,.5);
 }
 
-.startbox{
- width:min(620px,100%);
- background:#061116eF;
- border:1px solid #30474f;
- border-radius:14px;
- padding:28px 20px;
- text-align:center;
+.stove{
+    width:100px;
+    height:130px;
+    right:14%;
+    top:42%;
+    background:#292b2a;
+    box-shadow:0 15px 20px #000;
 }
 
-.bigtitle{
- font-size:clamp(42px,11vw,78px);
- letter-spacing:9px;
- font-weight:900;
+.chest{
+    width:120px;
+    height:75px;
+    left:62%;
+    top:68%;
+    background:#59432d;
 }
 
-.tag{
- color:#82979e;
- font-size:10px;
- letter-spacing:3px;
- margin:5px 0 25px;
+.eye{
+    position:absolute;
+    left:50%;
+    top:-28px;
+    transform:translateX(-50%);
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:rgba(0,0,0,.72);
+    border:1px solid rgba(255,255,255,.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
-.starttext{
- color:#aebfc4;
- line-height:1.7;
- font-size:13px;
- margin-bottom:22px;
+/* =========================================================
+   COMBAT
+========================================================= */
+
+#combatScreen{
+    position:absolute;
+    inset:0;
+    z-index:500;
+    display:none;
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(130,130,110,.2),
+            transparent 32%),
+        linear-gradient(
+            180deg,
+            #151a1a,
+            #090d0f 70%);
 }
 
-.startbtn{
- width:100%;
- padding:14px;
- border-radius:8px;
- border:1px solid #49636c;
- background:#1b343d;
- color:white;
- cursor:pointer;
- margin-top:7px;
+#combatScreen.open{
+    display:block;
 }
 
-.secondary{
- background:#0e1c21;
+.combatTop{
+    position:absolute;
+    top:15px;
+    left:15px;
+    right:15px;
+    display:flex;
+    justify-content:space-between;
 }
 
-.endtitle{
- font-size:34px;
- font-weight:bold;
- margin-bottom:15px;
+.enemyTitle{
+    font-size:20px;
+    font-weight:bold;
 }
 
-.endtext{
- color:#9eb2b8;
- font-size:13px;
- line-height:1.7;
+.distance{
+    color:#adb4b1;
+    font-size:12px;
+    margin-top:4px;
 }
 
-@media(max-width:600px){
- .stats{grid-template-columns:repeat(5,1fr)}
- .stat small{font-size:7px}
- .stat b{font-size:9px}
- .tools{grid-template-columns:repeat(3,1fr)}
+.enemy{
+    position:absolute;
+    left:50%;
+    top:44%;
+    transform:translate(-50%,-50%);
+    text-align:center;
 }
 
-@media(max-width:380px){
- .logo{font-size:22px}
- .story{padding:13px}
+.animal{
+    font-size:130px;
+    filter:drop-shadow(0 20px 15px rgba(0,0,0,.6));
+}
+
+.enemyHealth{
+    width:250px;
+    height:8px;
+    background:#342b2b;
+    margin:10px auto;
+}
+
+.enemyHealth i{
+    display:block;
+    height:100%;
+    background:#9b4e48;
+}
+
+.combatBottom{
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    padding:14px;
+    background:rgba(5,9,11,.92);
+    border-top:1px solid rgba(255,255,255,.1);
+}
+
+.combatStats{
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    font-size:12px;
+    margin-bottom:12px;
+}
+
+.combatButtons{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:7px;
+    max-width:700px;
+    margin:auto;
+}
+
+.combatBtn{
+    min-height:58px;
+    background:#20282c;
+    border:1px solid rgba(255,255,255,.13);
+    cursor:pointer;
+}
+
+.combatBtn:active{
+    background:#4a5050;
+}
+
+/* =========================================================
+   NOTIFICATION
+========================================================= */
+
+#notification{
+    position:absolute;
+    z-index:1000;
+    left:50%;
+    top:16%;
+    transform:translateX(-50%);
+    padding:12px 18px;
+    background:rgba(4,9,11,.92);
+    border:1px solid rgba(255,255,255,.18);
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    text-align:center;
+}
+
+#notification.show{
+    opacity:1;
+}
+
+/* =========================================================
+   EVENT
+========================================================= */
+
+.eventTitle{
+    font-size:22px;
+    margin-bottom:7px;
+}
+
+.eventText{
+    color:#b3bbb8;
+    line-height:1.5;
+}
+
+.eventButtons{
+    display:flex;
+    gap:7px;
+    margin-top:18px;
+}
+
+.eventButtons button{
+    flex:1;
+    padding:13px;
+    background:#222b2f;
+    border:1px solid rgba(255,255,255,.15);
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:700px){
+
+    #world{
+        width:1250px;
+        height:834px;
+    }
+
+    #status{
+        top:75px;
+        width:145px;
+    }
+
+    #actions{
+        left:8px;
+        bottom:8px;
+    }
+
+    .action{
+        width:48px;
+        min-width:48px;
+        height:48px;
+    }
+
+    #controls{
+        bottom:8px;
+        grid-template-columns:54px 54px 54px;
+        grid-template-rows:54px 54px;
+    }
+
+    .move{
+        font-size:23px;
+    }
+
+    .inventoryGrid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .animal{
+        font-size:95px;
+    }
+
+    .combatButtons{
+        grid-template-columns:repeat(2,1fr);
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div id="start">
- <div class="startbox">
-  <div class="bigtitle">WHITEOUT</div>
-  <div class="tag">TEXT SURVIVAL</div>
+<div id="game">
 
-  <div class="starttext">
-   Самолёт разбился в неизвестной северной
-   пустоши.<br><br>
-   Ты один.<br>
-   Температура падает.<br>
-   Где-то в лесу воют волки.<br><br>
-   Выживи как можно дольше и выясни,
-   что произошло в этом месте.
-  </div>
+<!-- ======================================================
+     КАРТА
+======================================================= -->
 
-  <button class="startbtn" onclick="newGame()">
-   НАЧАТЬ НОВУЮ ИГРУ
-  </button>
+<div id="mapScreen">
 
-  <button id="continue" class="startbtn secondary"
-          onclick="loadGame()" style="display:none">
-   ПРОДОЛЖИТЬ
-  </button>
- </div>
-</div>
+    <div id="world">
 
-<div id="death">
- <div class="startbox">
-  <div class="endtitle">ТЫ ПОГИБ</div>
-  <div class="endtext" id="deathText"></div>
-  <button class="startbtn" onclick="newGame()">НАЧАТЬ ЗАНОВО</button>
- </div>
-</div>
+        <!-- маркеры -->
+        <div class="marker" style="left:43%;top:45%" onclick="enterLocation('Таинственное озеро','Хижина рыбака')">
+            🏠
+            <div class="markerLabel">Хижина рыбака</div>
+        </div>
 
-<div id="ending">
- <div class="startbox">
-  <div class="endtitle" id="endingTitle"></div>
-  <div class="endtext" id="endingText"></div>
-  <button class="startbtn" onclick="newGame()">НОВАЯ ИГРА</button>
- </div>
-</div>
+        <div class="marker" style="left:51%;top:61%" onclick="enterLocation('Горный город','Дом')">
+            🏠
+            <div class="markerLabel">Дом</div>
+        </div>
 
+        <div class="marker" style="left:31%;top:62%" onclick="enterLocation('Мрачная бухта','Причал')">
+            ⚓
+            <div class="markerLabel">Причал</div>
+        </div>
 
-<div class="app">
+        <div class="marker" style="left:71%;top:30%" onclick="showEvent('Заброшенное здание')">
+            🏚
+            <div class="markerLabel">Здание</div>
+        </div>
 
-<header>
- <div class="logo">WHITEOUT</div>
- <div class="sub">TEXT SURVIVAL RPG</div>
+        <div class="marker" style="left:68%;top:71%" onclick="showEvent('Лагерь')">
+            🔥
+            <div class="markerLabel">Лагерь</div>
+        </div>
 
- <div class="stats">
+        <div class="marker" style="left:78%;top:65%" onclick="showEvent('Пещера')">
+            ⛰
+            <div class="markerLabel">Пещера</div>
+        </div>
 
-  <div class="stat">
-   <small>❤️ ЗДОРОВЬЕ</small>
-   <b id="hp">100</b>
-   <div class="bar"><i id="hpbar"></i></div>
-  </div>
+    </div>
 
-  <div class="stat">
-   <small>🍖 ГОЛОД</small>
-   <b id="food">100</b>
-   <div class="bar"><i id="foodbar"></i></div>
-  </div>
+    <div id="player">
+        <div class="playerArrow">▲</div>
+        <div class="playerDot"></div>
+    </div>
 
-  <div class="stat">
-   <small>💧 ЖАЖДА</small>
-   <b id="water">100</b>
-   <div class="bar"><i id="waterbar"></i></div>
-  </div>
+    <!-- HUD -->
 
-  <div class="stat">
-   <small>⚡ ЭНЕРГИЯ</small>
-   <b id="energy">100</b>
-   <div class="bar"><i id="energybar"></i></div>
-  </div>
+    <div id="topHud">
 
-  <div class="stat">
-   <small>🌡️ ТЕПЛО</small>
-   <b id="warm">70</b>
-   <div class="bar"><i id="warmbar"></i></div>
-  </div>
+        <div class="hudBox">
+            <div id="locationName">ТАИНСТВЕННОЕ ОЗЕРО</div>
+            <div id="locationSub">Окрестности</div>
+        </div>
 
- </div>
-</header>
+        <div class="hudBox">
+            <div id="clock">08:00</div>
+            <div id="weatherText">Ясно · −8°C</div>
+        </div>
 
+    </div>
 
-<div class="card">
+    <!-- состояние -->
 
- <div class="top">
+    <div id="status">
 
-  <div class="loc" id="location">
-   Место крушения
-  </div>
+        <div class="stat">
+            <div class="statLine">
+                <span>Состояние</span>
+                <b id="hpText">100</b>
+            </div>
+            <div class="bar"><i id="hpBar"></i></div>
+        </div>
 
-  <div class="clock">
-   <div id="day">ДЕНЬ 1</div>
-   <div id="time">08:17</div>
-   <div id="weather">🌨️ Снегопад • −11°C</div>
-  </div>
+        <div class="stat">
+            <div class="statLine">
+                <span>Голод</span>
+                <b id="foodText">100</b>
+            </div>
+            <div class="bar"><i id="foodBar"></i></div>
+        </div>
 
- </div>
+        <div class="stat">
+            <div class="statLine">
+                <span>Жажда</span>
+                <b id="waterText">100</b>
+            </div>
+            <div class="bar"><i id="waterBar"></i></div>
+        </div>
 
- <div class="story" id="story"></div>
+        <div class="stat">
+            <div class="statLine">
+                <span>Усталость</span>
+                <b id="energyText">100</b>
+            </div>
+            <div class="bar"><i id="energyBar"></i></div>
+        </div>
 
- <div class="choicebox" id="choices"></div>
+        <div class="stat">
+            <div class="statLine">
+                <span>Тепло</span>
+                <b id="warmText">100</b>
+            </div>
+            <div class="bar"><i id="warmBar"></i></div>
+        </div>
 
-</div>
+    </div>
 
+    <!-- действия -->
 
-<div class="tools">
+    <div id="actions">
 
- <button class="tool" onclick="inventory()">🎒 Инвентарь</button>
- <button class="tool" onclick="map()">🗺️ Карта</button>
- <button class="tool" onclick="craft()">🔨 Крафт</button>
+        <button class="action" onclick="openInventory()">
+            <span>🎒</span>
+            <small>РЮКЗАК</small>
+        </button>
 
- <button class="tool" onclick="eat()">🍖 Есть</button>
- <button class="tool" onclick="drink()">💧 Пить</button>
- <button class="tool" onclick="saveGame()">💾 Сохранить</button>
+        <button class="action" onclick="openMapInfo()">
+            <span>🗺</span>
+            <small>КАРТА</small>
+        </button>
 
-</div>
+        <button class="action" onclick="openJournal()">
+            <span>📓</span>
+            <small>ЖУРНАЛ</small>
+        </button>
 
+    </div>
 
-<div class="log">
- <h3>📜 ЖУРНАЛ</h3>
- <div id="log"></div>
-</div>
+    <!-- управление -->
 
-</div>
+    <div id="controls">
 
+        <button class="move up" onclick="move(0,-1)">▲</button>
+        <button class="move left" onclick="move(-1,0)">◀</button>
+        <button class="move down" onclick="move(0,1)">▼</button>
+        <button class="move right" onclick="move(1,0)">▶</button>
 
-<div class="overlay" id="inventory">
- <div class="modal">
-  <div class="modalhead">
-   <b>🎒 ИНВЕНТАРЬ</b>
-   <button class="close" onclick="closeModal('inventory')">×</button>
-  </div>
-  <div class="modalbody">
-   <div class="items" id="items"></div>
-  </div>
- </div>
-</div>
+    </div>
 
-
-<div class="overlay" id="map">
- <div class="modal">
-  <div class="modalhead">
-   <b>🗺️ КАРТА</b>
-   <button class="close" onclick="closeModal('map')">×</button>
-  </div>
-  <div class="modalbody">
-   <div class="map" id="mapList"></div>
-  </div>
- </div>
 </div>
 
 
-<div class="overlay" id="craft">
- <div class="modal">
-  <div class="modalhead">
-   <b>🔨 КРАФТ</b>
-   <button class="close" onclick="closeModal('craft')">×</button>
-  </div>
-  <div class="modalbody" id="recipes"></div>
- </div>
+<!-- ======================================================
+     ИНТЕРЬЕР
+======================================================= -->
+
+<div id="interiorScreen">
+
+    <div class="room">
+
+        <div class="wall"></div>
+        <div class="floor"></div>
+
+        <div class="roomObject bed"
+             onclick="inspect('Кровать','Старая, но ещё пригодная для сна.')">
+            <div class="eye">◉</div>
+        </div>
+
+        <div class="roomObject table"
+             onclick="openContainer('Тумбочка')">
+            <div class="eye">◉</div>
+        </div>
+
+        <div class="roomObject stove"
+             onclick="inspect('Печь','Можно развести огонь.')">
+            <div class="eye">◉</div>
+        </div>
+
+        <div class="roomObject chest"
+             onclick="openContainer('Сундук')">
+            <div class="eye">◉</div>
+        </div>
+
+    </div>
+
+    <button
+        onclick="exitLocation()"
+        style="
+        position:absolute;
+        top:15px;
+        left:15px;
+        z-index:30;
+        padding:12px 18px;
+        background:rgba(5,10,13,.88);
+        border:1px solid rgba(255,255,255,.2);
+        ">
+        ← ВЫЙТИ
+    </button>
+
+    <div style="
+        position:absolute;
+        bottom:18px;
+        left:50%;
+        transform:translateX(-50%);
+        background:rgba(5,10,13,.85);
+        padding:10px 18px;
+        font-size:12px;">
+        ХИЖИНА РЫБАКА
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     БОЙ
+======================================================= -->
+
+<div id="combatScreen">
+
+    <div class="combatTop">
+
+        <div>
+            <div class="enemyTitle" id="enemyName">ВОЛК</div>
+            <div class="distance">
+                Дистанция: <b id="distance">14</b> м
+            </div>
+        </div>
+
+        <button
+            onclick="leaveCombat()"
+            style="
+            background:#222;
+            border:1px solid #555;
+            padding:10px 15px;">
+            ОТСТУПИТЬ
+        </button>
+
+    </div>
+
+    <div class="enemy">
+
+        <div class="animal" id="animal">🐺</div>
+
+        <div class="enemyHealth">
+            <i id="enemyHealth"></i>
+        </div>
+
+        <div id="enemyState"
+             style="font-size:11px;color:#aeb5b2">
+             Наблюдает за вами
+        </div>
+
+    </div>
+
+    <div class="combatBottom">
+
+        <div class="combatStats">
+            <span>❤ <b id="combatHp">100</b></span>
+            <span>⚡ <b id="combatEnergy">100</b></span>
+            <span>🔪 Нож</span>
+        </div>
+
+        <div class="combatButtons">
+
+            <button class="combatBtn" onclick="attack()">
+                ⚔️<br>АТАКА
+            </button>
+
+            <button class="combatBtn" onclick="dodge()">
+                ↪️<br>УКЛОНЕНИЕ
+            </button>
+
+            <button class="combatBtn" onclick="useCombatItem()">
+                💊<br>ПРЕДМЕТ
+            </button>
+
+            <button class="combatBtn" onclick="leaveCombat()">
+                🏃<br>ОТСТУПИТЬ
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     ОБЩИЕ ОКНА
+======================================================= -->
+
+<div id="inventory" class="overlay">
+
+    <div class="panel">
+
+        <div class="panelHeader">
+            <h2>РЮКЗАК</h2>
+            <button class="close" onclick="closeAll()">×</button>
+        </div>
+
+        <div class="panelBody">
+
+            <div class="inventoryGrid" id="inventoryGrid"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="genericPanel" class="overlay">
+
+    <div class="panel">
+
+        <div class="panelHeader">
+            <h2 id="genericTitle">ОБЪЕКТ</h2>
+            <button class="close" onclick="closeAll()">×</button>
+        </div>
+
+        <div class="panelBody" id="genericBody"></div>
+
+    </div>
+
+</div>
+
+
+<div id="eventPanel" class="overlay">
+
+    <div class="panel">
+
+        <div class="panelBody">
+
+            <div class="eventTitle" id="eventTitle"></div>
+
+            <div class="eventText" id="eventText"></div>
+
+            <div class="eventButtons">
+
+                <button onclick="eventAction('search')">
+                    ОСМОТРЕТЬ
+                </button>
+
+                <button onclick="eventAction('leave')">
+                    УЙТИ
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="notification"></div>
+
 </div>
 
 
 <script>
+/* =========================================================
+   СОСТОЯНИЕ ИГРЫ
+========================================================= */
 
-const SAVE="whiteout_save_v2";
+const state = {
 
-let game=null;
+    x:50,
+    y:50,
 
+    region:"Таинственное озеро",
 
-const locations={
+    hp:100,
+    hunger:100,
+    thirst:100,
+    energy:100,
+    warmth:100,
 
- crash:{
-  name:"Место крушения",
-  desc:"Разбитый самолёт и снежное поле.",
-  shelter:false
- },
+    hour:8,
+    minute:0,
 
- road:{
-  name:"Лесная дорога",
-  desc:"Старая дорога между хвойными деревьями.",
-  shelter:false
- },
+    weather:"Ясно",
+    temperature:-8,
 
- cabin:{
-  name:"Охотничья хижина",
-  desc:"Небольшой деревянный дом.",
-  shelter:true
- },
+    moving:false,
 
- lake:{
-  name:"Замёрзшее озеро",
-  desc:"Огромное покрытое снегом озеро.",
-  shelter:false
- },
+    inventory:[
+        {name:"Фляга",icon:"🫙",count:1},
+        {name:"Консервы",icon:"🥫",count:2},
+        {name:"Спички",icon:"🔥",count:12},
+        {name:"Нож",icon:"🔪",count:1},
+        {name:"Фонарь",icon:"🔦",count:1},
+        {name:"Бинт",icon:"🩹",count:2},
+        {name:"Удочка",icon:"🎣",count:1},
+        {name:"Палка",icon:"🪵",count:3},
+        {name:"Книга",icon:"📕",count:1},
+        {name:"Шкура",icon:"🟫",count:1}
+    ],
 
- station:{
-  name:"Метеостанция",
-  desc:"Заброшенная научная станция.",
-  shelter:true
- },
-
- village:{
-  name:"Пустая деревня",
-  desc:"Несколько заброшенных домов.",
-  shelter:true
- },
-
- mine:{
-  name:"Старая шахта",
-  desc:"Тёмная шахта в склоне горы.",
-  shelter:false
- },
-
- tower:{
-  name:"Радиовышка",
-  desc:"Высокая вышка на заснеженной горе.",
-  shelter:false
- },
-
- bunker:{
-  name:"Бункер №17",
-  desc:"Таинственное подземное сооружение.",
-  shelter:true
- }
+    combat:null
 
 };
 
 
-const items={
+/* =========================================================
+   КАРТА
+========================================================= */
 
- canned:{
-  n:"🥫 Консервы",
-  d:"Еда.",
- },
+const world=document.getElementById("world");
 
- meat:{
-  n:"🥩 Сырое мясо",
-  d:"Сырое мясо.",
- },
+function updateWorld(){
 
- cooked:{
-  n:"🍖 Жареное мясо",
-  d:"Приготовленная еда.",
- },
+    /*
+       Игрок остаётся в центре.
+       Карта двигается в противоположную сторону.
+    */
 
- water:{
-  n:"💧 Вода",
-  d:"Питьевая вода.",
- },
+    const scale=1;
 
- wood:{
-  n:"🪵 Дрова",
-  d:"Топливо для костра.",
- },
+    const px=(50-state.x)*16*scale;
+    const py=(50-state.y)*10.67*scale;
 
- cloth:{
-  n:"🧵 Ткань",
-  d:"Материал для бинтов.",
- },
+    world.style.transform=
+        `translate(calc(-50% + ${px}px),calc(-50% + ${py}px))`;
 
- medicine:{
-  n:"💊 Медикаменты",
-  d:"Восстанавливают здоровье.",
- },
-
- matches:{
-  n:"🔥 Спички",
-  d:"Для разведения огня.",
- },
-
- knife:{
-  n:"🔪 Нож",
-  d:"Простой нож.",
- },
-
- rifle:{
-  n:"🔫 Винтовка",
-  d:"Охотничье оружие.",
- },
-
- ammo:{
-  n:"◉ Патроны",
-  d:"Боеприпасы.",
- },
-
- bandage:{
-  n:"🩹 Бинт",
-  d:"Останавливает кровотечение.",
- },
-
- scrap:{
-  n:"⚙️ Металл",
-  d:"Куски металла.",
- },
-
- battery:{
-  n:"🔋 Батарея",
-  d:"Источник энергии.",
- },
-
- radio:{
-  n:"📻 Радиостанция",
-  d:"Для связи со спасателями."
- }
-
-};
-
-
-function newGame(){
-
- game={
-
-  day:1,
-  minutes:497,
-
-  location:"crash",
-
-  hp:100,
-  hunger:84,
-  thirst:90,
-  energy:96,
-  warmth:63,
-
-  temp:-11,
-  weather:"Снегопад",
-
-  fire:false,
-  fireTime:0,
-
-  bleeding:false,
-
-  inventory:{
-   canned:2,
-   meat:0,
-   cooked:0,
-   water:2,
-   wood:4,
-   cloth:1,
-   medicine:1,
-   matches:3,
-   knife:1,
-   rifle:0,
-   ammo:0,
-   bandage:1,
-   scrap:0,
-   battery:0,
-   radio:0
-  },
-
-  unlocked:{
-   crash:true,
-   road:true,
-   cabin:true,
-   lake:false,
-   station:false,
-   village:false,
-   mine:false,
-   tower:false,
-   bunker:false
-  },
-
-  flags:{
-   plane:false,
-   cabin:false,
-   lake:false,
-   station:false,
-   village:false,
-   mine:false,
-   generator:false,
-   survivor:false,
-   tower:false,
-   bunker:false
-  },
-
-  log:[]
-
- };
-
- localStorage.removeItem(SAVE);
-
- document.getElementById("start").style.display="none";
-
- log("Ты очнулся возле разбитого самолёта.");
-
- render();
-
- crashScene();
+    detectRegion();
 
 }
 
 
-function loadGame(){
+/* =========================================================
+   ПЕРЕМЕЩЕНИЕ
+========================================================= */
 
- let data=localStorage.getItem(SAVE);
+function move(dx,dy){
 
- if(!data)return;
+    if(state.combat) return;
 
- game=JSON.parse(data);
+    const speed=0.45;
 
- document.getElementById("start").style.display="none";
+    state.x+=dx*speed;
+    state.y+=dy*speed;
 
- log("Сохранение загружено.");
+    state.x=Math.max(4,Math.min(96,state.x));
+    state.y=Math.max(4,Math.min(96,state.y));
 
- render();
+    passTime(2);
 
- scene();
+    state.energy-=0.12;
+    state.hunger-=0.025;
+    state.thirst-=0.04;
 
+    if(state.warmth<20){
+        state.hp-=0.08;
+    }
+
+    updateWorld();
+    updateHUD();
+
+    randomEncounter();
+
+    saveGame();
 }
 
 
-function saveGame(){
+/* =========================================================
+   КЛАВИАТУРА
+========================================================= */
 
- if(!game)return;
+document.addEventListener("keydown",e=>{
 
- localStorage.setItem(SAVE,JSON.stringify(game));
+    if(e.key==="ArrowUp" || e.key.toLowerCase()==="w")
+        move(0,-1);
 
- log("Игра сохранена.");
+    if(e.key==="ArrowDown" || e.key.toLowerCase()==="s")
+        move(0,1);
 
- render();
+    if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a")
+        move(-1,0);
 
-}
+    if(e.key==="ArrowRight" || e.key.toLowerCase()==="d")
+        move(1,0);
 
+    if(e.key==="i")
+        openInventory();
 
-function render(){
+});
 
- if(!game)return;
 
- set("hp",Math.round(game.hp));
- set("food",Math.round(game.hunger));
- set("water",Math.round(game.thirst));
- set("energy",Math.round(game.energy));
- set("warm",Math.round(game.warmth));
+/* =========================================================
+   РЕГИОНЫ
+========================================================= */
 
- set("hpbar",null,game.hp);
- set("foodbar",null,game.hunger);
- set("waterbar",null,game.thirst);
- set("energybar",null,game.energy);
- set("warmbar",null,game.warmth);
+const regions=[
 
- set("location",locations[game.location].name);
-
- set("day","ДЕНЬ "+game.day);
-
- set("time",time());
-
- set(
-  "weather",
-  weatherIcon()+" "+
-  game.weather+
-  " • "+
-  game.temp+"°C"
- );
-
- updateLog();
-
-}
-
-
-function set(id,text,width){
-
- let el=document.getElementById(id);
-
- if(!el)return;
-
- if(text!==null)
-  el.textContent=text;
-
- if(width!==undefined)
-  el.style.width=clamp(width,0,100)+"%";
-
-}
-
-
-function time(){
-
- let h=Math.floor(game.minutes/60)%24;
- let m=Math.floor(game.minutes%60);
-
- return String(h).padStart(2,"0")+":"+
-        String(m).padStart(2,"0");
-
-}
-
-
-function weatherIcon(){
-
- if(game.weather==="Снегопад")return"🌨️";
- if(game.weather==="Метель")return"🌬️";
- if(game.weather==="Ясно")return"☀️";
- if(game.weather==="Туман")return"🌫️";
-
- return"☁️";
-
-}
-
-
-function clamp(v,a,b){
-
- return Math.max(a,Math.min(b,v));
-
-}
-
-
-function log(text){
-
- if(!game)return;
-
- game.log.unshift(text);
-
- if(game.log.length>35)
-  game.log.pop();
-
- updateLog();
-
-}
-
-
-function updateLog(){
-
- if(!game)return;
-
- document.getElementById("log").innerHTML=
-  game.log
-   .map(x=>`<div class="logline">${safe(x)}</div>`)
-   .join("");
-
-}
-
-
-function safe(x){
-
- return String(x)
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;");
-
-}
-
-
-/* ================================
-   TIME
-================================ */
-
-function advance(minutes){
-
- game.minutes+=minutes;
-
- let hours=minutes/60;
-
- game.hunger-=hours*1.5;
- game.thirst-=hours*2;
- game.energy-=hours*.7;
-
- if(game.fire){
-
-  game.fireTime-=minutes;
-
-  game.warmth+=hours*12;
-
-  if(game.fireTime<=0){
-
-   game.fire=false;
-   game.fireTime=0;
-
-   log("Костёр погас.");
-
-  }
-
- }else{
-
-  let shelter=locations[game.location].shelter;
-
-  if(shelter){
-
-   game.warmth-=hours*1;
-
-  }else{
-
-   game.warmth-=hours*
-    (3+Math.abs(game.temp)/15);
-
-  }
-
- }
-
- if(game.bleeding)
-  game.hp-=hours*3;
-
- if(game.hunger<=0)
-  game.hp-=hours*1.5;
-
- if(game.thirst<=0)
-  game.hp-=hours*2;
-
- if(game.energy<=0)
-  game.hp-=hours*.8;
-
- if(game.warmth<=0)
-  game.hp-=hours*4;
-
- game.hp=clamp(game.hp,0,100);
- game.hunger=clamp(game.hunger,0,100);
- game.thirst=clamp(game.thirst,0,100);
- game.energy=clamp(game.energy,0,100);
- game.warmth=clamp(game.warmth,0,100);
-
- if(game.minutes>=1440){
-
-  game.minutes-=1440;
-  game.day++;
-
-  log("Наступил новый день.");
-
- }
-
- randomWeather();
-
- render();
-
- deathCheck();
-
-}
-
-
-function randomWeather(){
-
- let r=Math.random();
-
- if(r<.4){
-
-  game.weather="Облачно";
-  game.temp=rnd(-12,-6);
-
- }else if(r<.7){
-
-  game.weather="Снегопад";
-  game.temp=rnd(-17,-8);
-
- }else if(r<.86){
-
-  game.weather="Ясно";
-  game.temp=rnd(-22,-10);
-
- }else if(r<.96){
-
-  game.weather="Туман";
-  game.temp=rnd(-15,-7);
-
- }else{
-
-  game.weather="Метель";
-  game.temp=rnd(-28,-17);
-
- }
-
-}
-
-
-function rnd(a,b){
-
- return Math.floor(Math.random()*(b-a+1))+a;
-
-}
-
-
-function deathCheck(){
-
- if(game.hp>0)return;
-
- let reason="Холод оказался сильнее.";
-
- if(game.thirst<=0)
-  reason="Организм не выдержал обезвоживания.";
-
- else if(game.hunger<=0)
-  reason="Ты слишком долго оставался без еды.";
-
- else if(game.warmth<=0)
-  reason="Ты замёрз.";
-
- document.getElementById("deathText").textContent=
-  reason+
-  " Ты прожил "+game.day+" день.";
-
- document.getElementById("death").style.display="flex";
-
- localStorage.removeItem(SAVE);
-
-}
-
-
-/* ================================
-   SCENE
-================================ */
-
-function scene(){
-
- switch(game.location){
-
-  case"crash":crashScene();break;
-  case"road":roadScene();break;
-  case"cabin":cabinScene();break;
-  case"lake":lakeScene();break;
-  case"station":stationScene();break;
-  case"village":villageScene();break;
-  case"mine":mineScene();break;
-  case"tower":towerScene();break;
-  case"bunker":bunkerScene();break;
-
- }
-
-}
-
-
-function show(title,text,choices){
-
- document.getElementById("story").innerHTML=
-  `<h2>${title}</h2><p>${text}</p>`;
-
- let box=document.getElementById("choices");
-
- box.innerHTML="";
-
- choices.forEach(c=>{
-
-  let b=document.createElement("button");
-
-  b.className="choice";
-  b.innerHTML=c.text;
-
-  b.disabled=!!c.disabled;
-
-  b.onclick=()=>c.action();
-
-  box.appendChild(b);
-
- });
-
- render();
-
-}
-
-
-/* ================================
-   CRASH
-================================ */
-
-function crashScene(){
-
- show(
- "МЕСТО КРУШЕНИЯ",
-
- `Ты стоишь возле разбитого самолёта.
-
- Снег забивает следы катастрофы.
-
- Вокруг лежат чемоданы, куски металла
- и обломки кресел.
-
- Где-то в лесу воет волк.
-
- Тебе необходимо найти укрытие до наступления ночи.`,
-
- [
-
-  {
-   text:"🔍 Обыскать самолёт",
-   disabled:game.flags.plane,
-   action:searchPlane
-  },
-
-  {
-   text:"🧳 Проверить чемоданы",
-   action:searchBags
-  },
-
-  {
-   text:"🔥 Развести костёр",
-   action:fire
-  },
-
-  {
-   text:"🌲 Идти к лесной дороге",
-   action:()=>travel("road",15)
-  },
-
-  {
-   text:"🏠 Идти к хижине",
-   action:()=>travel("cabin",25)
-  },
-
-  {
-   text:"🍖 Поесть",
-   action:eat
-  },
-
-  {
-   text:"💧 Выпить",
-   action:drink
-  }
-
- ]);
-
-}
-
-
-function searchPlane(){
-
- game.flags.plane=true;
-
- add("canned",1);
- add("water",1);
- add("cloth",1);
- add("matches",2);
-
- if(Math.random()<.5)
-  add("battery",1);
-
- log("В самолёте найдены припасы.");
-
- advance(25);
-
- crashScene();
-
-}
-
-
-function searchBags(){
-
- add("canned",1);
- add("cloth",1);
-
- if(Math.random()<.35)
-  add("medicine",1);
-
- if(Math.random()<.2)
-  add("ammo",2);
-
- log("В чемоданах нашлись полезные вещи.");
-
- advance(20);
-
- crashScene();
-
-}
-
-
-/* ================================
-   ROAD
-================================ */
-
-function roadScene(){
-
- show(
- "ЛЕСНАЯ ДОРОГА",
-
- `Старая дорога уходит между деревьями.
-
- Снег почти полностью скрыл её.
-
- На снегу видны следы.
-
- Человеческие.
-
- Но рядом есть следы другого существа.`,
-
- [
-
-  {
-   text:"🏠 Идти к хижине",
-   action:()=>travel("cabin",25)
-  },
-
-  {
-   text:"🧊 Идти к озеру",
-   action:()=>{
-    unlock("lake");
-    travel("lake",35);
-   }
-  },
-
-  {
-   text:"🔍 Исследовать следы",
-   action:tracks
-  },
-
-  {
-   text:"🪵 Собрать дрова",
-   action:wood
-  },
-
-  {
-   text:"📡 Искать метеостанцию",
-   disabled:!game.unlocked.station,
-   action:()=>travel("station",45)
-  },
-
-  {
-   text:"↩️ Вернуться к самолёту",
-   action:()=>travel("crash",15)
-  }
-
- ]);
-
-}
-
-
-function tracks(){
-
- advance(15);
-
- if(Math.random()<.55){
-
-  wolf();
-
- }else{
-
-  unlock("village");
-
-  log("Человеческие следы ведут к деревне.");
-
-  show(
-   "СЛЕДЫ",
-
-   `Ты внимательно рассматриваешь отпечатки.
-
-   Кто-то прошёл здесь недавно.
-
-   Следы направляются к северу.
-
-   Возможно, там есть другие выжившие.`,
-
-   [
     {
-     text:"➡️ Следовать за следами",
-     action:()=>travel("village",40)
+        name:"Горы Тимбервулф",
+        x1:0,y1:0,x2:32,y2:30
     },
+
     {
-     text:"↩️ Вернуться",
-     action:roadScene
-    }
-   ]
-  );
-
- }
-
-}
-
-
-function wood(){
-
- let n=rnd(1,3);
-
- add("wood",n);
-
- log("Ты собрал "+n+" дров.");
-
- advance(20);
-
- roadScene();
-
-}
-
-
-/* ================================
-   CABIN
-================================ */
-
-function cabinScene(){
-
- show(
- "ОХОТНИЧЬЯ ХИЖИНА",
-
- `Ты находишь небольшой деревянный дом.
-
- Внутри тихо.
-
- Стены защищают от ветра.
-
- На столе лежит старая карта.
-
- Рядом стоит холодная печь.`,
-
- [
-
-  {
-   text:"🔍 Обыскать хижину",
-   disabled:game.flags.cabin,
-   action:searchCabin
-  },
-
-  {
-   text:"🔥 Разжечь печь",
-   action:fire
-  },
-
-  {
-   text:"🛏️ Спать",
-   action:()=>sleep(5)
-  },
-
-  {
-   text:"🩹 Лечиться",
-   action:heal
-  },
-
-  {
-   text:"🗺️ Изучить карту",
-   action:studyMap
-  },
-
-  {
-   text:"↩️ Вернуться на дорогу",
-   action:()=>travel("road",20)
-  }
-
- ]);
-
-}
-
-
-function searchCabin(){
-
- game.flags.cabin=true;
-
- add("canned",2);
- add("wood",3);
- add("matches",2);
- add("cloth",2);
-
- if(Math.random()<.5)
-  add("medicine",1);
-
- if(Math.random()<.3){
-
-  add("rifle",1);
-  add("ammo",4);
-
-  log("Под кроватью найдена охотничья винтовка.");
-
- }
-
- log("Хижина обыскана.");
-
- advance(30);
-
- cabinScene();
-
-}
-
-
-function studyMap(){
-
- unlock("station");
- unlock("village");
-
- log("На карте отмечены деревня и метеостанция.");
-
- advance(10);
-
- cabinScene();
-
-}
-
-
-/* ================================
-   LAKE
-================================ */
-
-function lakeScene(){
-
- show(
- "ЗАМЁРЗШЕЕ ОЗЕРО",
-
- `Перед тобой огромное замёрзшее озеро.
-
- На противоположной стороне стоит
- рыбацкий домик.
-
- Лёд выглядит толстым.
-
- Но кое-где поверхность покрыта
- подозрительными трещинами.`,
-
- [
-
-  {
-   text:"🏚️ Идти к рыбацкому домику",
-   action:lakeSearch
-  },
-
-  {
-   text:"🎣 Попробовать поймать рыбу",
-   action:fish
-  },
-
-  {
-   text:"⚠️ Перейти озеро",
-   action:ice
-  },
-
-  {
-   text:"↩️ Вернуться на дорогу",
-   action:()=>travel("road",30)
-  }
-
- ]);
-
-}
-
-
-function lakeSearch(){
-
- if(!game.flags.lake){
-
-  game.flags.lake=true;
-
-  add("canned",1);
-  add("wood",2);
-  add("water",1);
-
-  if(Math.random()<.4)
-   add("ammo",2);
-
-  log("В рыбацком домике найдены припасы.");
-
- }
-
- advance(35);
-
- lakeScene();
-
-}
-
-
-function fish(){
-
- advance(40);
-
- if(Math.random()<.6){
-
-  add("meat",1);
-
-  log("Ты поймал рыбу.");
-
- }else{
-
-  log("Рыба не клюёт.");
-
- }
-
- lakeScene();
-
-}
-
-
-function ice(){
-
- advance(30);
-
- if(Math.random()<.2){
-
-  game.hp-=30;
-  game.warmth-=20;
-
-  log("Лёд треснул! Ты провалился.");
-
-  deathCheck();
-
- }else{
-
-  unlock("mine");
-
-  log("На другом берегу найден вход в шахту.");
-
- }
-
- if(game.hp>0)
-  lakeScene();
-
-}
-
-
-/* ================================
-   STATION
-================================ */
-
-function stationScene(){
-
- show(
- "МЕТЕОСТАНЦИЯ",
-
- `Старая метеостанция давно заброшена.
-
- Однако внутри всё ещё стоит генератор.
-
- На стене висит карта погодных наблюдений.
-
- Рядом лежит старая радиостанция.`,
-
- [
-
-  {
-   text:"🔍 Обыскать станцию",
-   disabled:game.flags.station,
-   action:searchStation
-  },
-
-  {
-   text:"⚡ Запустить генератор",
-   action:generator
-  },
-
-  {
-   text:"📻 Проверить радио",
-   action:radio
-  },
-
-  {
-   text:"🛏️ Отдохнуть",
-   action:()=>sleep(4)
-  },
-
-  {
-   text:"↩️ Вернуться",
-   action:()=>travel("road",40)
-  }
-
- ]);
-
-}
-
-
-function searchStation(){
-
- game.flags.station=true;
-
- add("scrap",3);
- add("battery",1);
- add("cloth",1);
-
- if(Math.random()<.5)
-  add("medicine",1);
-
- log("Метеостанция обыскана.");
-
- advance(40);
-
- stationScene();
-
-}
-
-
-function generator(){
-
- if(get("scrap")<2){
-
-  log("Для ремонта не хватает металла.");
-
-  stationScene();
-
-  return;
-
- }
-
- remove("scrap",2);
-
- game.flags.generator=true;
-
- unlock("tower");
-
- log("Генератор запущен. Радиовышка ожила.");
-
- advance(25);
-
- stationScene();
-
-}
-
-
-function radio(){
-
- if(get("battery")<1){
-
-  log("Для радио нужна батарея.");
-
-  stationScene();
-
-  return;
-
- }
-
- add("radio",1);
-
- log("Ты нашёл рабочую радиостанцию.");
-
- stationScene();
-
-}
-
-
-/* ================================
-   VILLAGE
-================================ */
-
-function villageScene(){
-
- show(
- "ПУСТАЯ ДЕРЕВНЯ",
-
- `Несколько домов стоят посреди снега.
-
- Ни одного человека.
-
- Но из одного дома идёт тонкая
- струйка дыма.
-
- Кто-то здесь есть.`,
-
- [
-
-  {
-   text:"🔍 Обыскать дома",
-   disabled:game.flags.village,
-   action:searchVillage
-  },
-
-  {
-   text:"👣 Идти к дому с дымом",
-   action:survivor
-  },
-
-  {
-   text:"🛏️ Переночевать",
-   action:()=>sleep(7)
-  },
-
-  {
-   text:"↩️ Вернуться на дорогу",
-   action:()=>travel("road",35)
-  }
-
- ]);
-
-}
-
-
-function searchVillage(){
-
- game.flags.village=true;
-
- add("canned",3);
- add("water",2);
- add("wood",3);
-
- if(Math.random()<.4)
-  add("medicine",1);
-
- log("В деревне найдены запасы.");
-
- advance(50);
-
- villageScene();
-
-}
-
-
-function survivor(){
-
- if(game.flags.survivor){
-
-  unlock("tower");
-  unlock("bunker");
-
-  show(
-   "ПОСЛЕДНИЙ ВЫЖИВШИЙ",
-
-   `Человек уже ушёл.
-
-   На столе он оставил записку:
-
-   «Если читаешь это — иди к вышке.
-   Под ней есть место, где можно
-   переждать зиму».
-
-   Ты понимаешь, что речь идёт
-   о бункере.`,
-
-   [
-    {
-     text:"📡 Идти к радиовышке",
-     action:()=>travel("tower",60)
+        name:"Разломанный перевал",
+        x1:32,y1:0,x2:60,y2:25
     },
+
     {
-     text:"🚪 Искать бункер",
-     action:()=>travel("bunker",60)
+        name:"Заброшенный аэродром",
+        x1:68,y1:0,x2:100,y2:27
+    },
+
+    {
+        name:"Таинственное озеро",
+        x1:34,y1:27,x2:62,y2:58
+    },
+
+    {
+        name:"Безмолвная речная долина",
+        x1:62,y1:27,x2:86,y2:60
+    },
+
+    {
+        name:"Мрачная бухта",
+        x1:10,y1:62,x2:35,y2:100
+    },
+
+    {
+        name:"Тихая долина",
+        x1:28,y1:55,x2:48,y2:78
+    },
+
+    {
+        name:"Горный город",
+        x1:44,y1:58,x2:66,y2:83
+    },
+
+    {
+        name:"Ясень-каньон",
+        x1:65,y1:58,x2:83,y2:85
+    },
+
+    {
+        name:"Зона заражения",
+        x1:80,y1:65,x2:100,y2:100
     }
-   ]
-  );
 
-  return;
+];
 
- }
+function detectRegion(){
 
- game.flags.survivor=true;
+    const r=regions.find(r=>
+        state.x>=r.x1 &&
+        state.x<=r.x2 &&
+        state.y>=r.y1 &&
+        state.y<=r.y2
+    );
 
- unlock("tower");
- unlock("bunker");
+    if(r && r.name!==state.region){
 
- log("Ты встретил другого выжившего.");
+        state.region=r.name;
 
- show(
-  "НЕОЖИДАННАЯ ВСТРЕЧА",
+        notify("ВЫ ПЕРЕШЛИ В РЕГИОН",r.name);
 
-  `В дверях появляется мужчина.
-
-  Он выглядит измученным.
-
-  — Самолёт? — спрашивает он.
-
-  Ты киваешь.
-
-  — Тогда ты ничего не знаешь.
-
-  Он рассказывает о радиовышке
-  и подземном объекте №17.`,
-
-  [
-   {
-    text:"🤝 Выслушать его",
-    action:()=>{
-     advance(15);
-     villageScene();
     }
-   },
 
-   {
-    text:"🔫 Спросить об оружии",
-    action:()=>{
-     add("ammo",3);
-     if(get("rifle")===0)add("rifle",1);
-     log("Он оставил тебе старую винтовку.");
-     advance(10);
-     villageScene();
+    document.getElementById("locationName")
+        .textContent=state.region.toUpperCase();
+
+}
+
+
+/* =========================================================
+   ВРЕМЯ
+========================================================= */
+
+function passTime(minutes){
+
+    state.minute+=minutes;
+
+    while(state.minute>=60){
+
+        state.minute-=60;
+        state.hour++;
+
     }
-   }
-  ]
- );
+
+    if(state.hour>=24){
+
+        state.hour=0;
+
+    }
+
+    document.getElementById("clock").textContent=
+        String(state.hour).padStart(2,"0")+":"+
+        String(state.minute).padStart(2,"0");
 
 }
 
 
-/* ================================
-   MINE
-================================ */
+/* =========================================================
+   ПОГОДА
+========================================================= */
 
-function mineScene(){
+const weather=[
+    ["Ясно",-8],
+    ["Пасмурно",-10],
+    ["Снег",-13],
+    ["Метель",-18],
+    ["Туман",-7],
+    ["Сильный ветер",-16]
+];
 
- show(
- "СТАРАЯ ШАХТА",
+function changeWeather(){
 
- `Тёмный вход ведёт глубоко под землю.
+    const w=weather[Math.floor(Math.random()*weather.length)];
 
- Внутри холодно, но ветра почти нет.
+    state.weather=w[0];
+    state.temperature=w[1];
 
- На стене нанесён старый знак:
-
- «ОБЪЕКТ 17».`,
-
- [
-
-  {
-   text:"🔦 Войти в шахту",
-   action:enterMine
-  },
-
-  {
-   text:"⚙️ Собрать металл",
-   action:collectMetal
-  },
-
-  {
-   text:"↩️ Вернуться к озеру",
-   action:()=>travel("lake",30)
-  }
-
- ]);
+    document.getElementById("weatherText").textContent=
+        `${state.weather} · ${state.temperature}°C`;
 
 }
-
-
-function enterMine(){
-
- if(!game.flags.mine){
-
-  game.flags.mine=true;
-
-  add("scrap",4);
-  add("battery",1);
-
-  unlock("bunker");
-
-  log("В глубине шахты обнаружен тоннель к бункеру.");
-
- }else{
-
-  log("В шахте больше ничего полезного.");
-
- }
-
- advance(35);
-
- mineScene();
-
-}
-
-
-function collectMetal(){
-
- add("scrap",1);
-
- log("Найден металл.");
-
- advance(20);
-
- mineScene();
-
-}
-
-
-/* ================================
-   TOWER
-================================ */
-
-function towerScene(){
-
- show(
- "РАДИОВЫШКА",
-
- `Ты поднялся на вершину.
-
- Ветер почти сбивает тебя с ног.
-
- Перед тобой открывается огромная
- белая территория.
-
- Вдалеке виднеется дым.`,
-
- [
-
-  {
-   text:"📻 Передать сигнал",
-   disabled:get("battery")<1,
-   action:signal
-  },
-
-  {
-   text:"🔧 Починить антенну",
-   action:repairTower
-  },
-
-  {
-   text:"👁️ Осмотреть горизонт",
-   action:lookAround
-  },
-
-  {
-   text:"↩️ Спуститься",
-   action:()=>travel("station",40)
-  }
-
- ]);
-
-}
-
-
-function signal(){
-
- if(get("battery")<1){
-
-  log("Нет батареи.");
-
-  towerScene();
-
-  return;
-
- }
-
- advance(20);
-
- if(Math.random()<.7){
-
-  ending(
-   "📻 СИГНАЛ ПОЛУЧЕН",
-
-   `Радиостанция оживает.
-
-   Сначала слышен только шум.
-
-   Потом голос:
-
-   «Мы вас слышим.
-
-   Оставайтесь на месте.
-
-   Спасательная группа уже
-   направляется к вам».
-
-   Впервые после катастрофы
-   ты понимаешь, что можешь выжить.`
-  );
-
- }else{
-
-  log("Ответа нет.");
-
-  towerScene();
-
- }
-
-}
-
-
-function repairTower(){
-
- if(get("scrap")<3){
-
-  log("Не хватает металла.");
-
-  towerScene();
-
-  return;
-
- }
-
- remove("scrap",3);
-
- game.flags.tower=true;
-
- log("Антенна восстановлена.");
-
- advance(35);
-
- ending(
-  "🌅 ВЫШЕ ОБЛАКОВ",
-
-  `Старая антенна снова работает.
-
-  На горизонте появляется слабый свет.
-
-  Спустя несколько часов ты замечаешь
-  спасательный вертолёт.
-
-  Ты разводишь костёр и начинаешь
-  подавать сигнал.
-
-  Возможно, сегодня зима закончится.`
- );
-
-}
-
-
-function lookAround(){
-
- unlock("bunker");
-
- log("На склоне горы ты замечаешь скрытый вход.");
-
- advance(15);
-
- towerScene();
-
-}
-
-
-/* ================================
-   BUNKER
-================================ */
-
-function bunkerScene(){
-
- show(
- "Бункер №17",
-
- `Перед тобой массивная металлическая дверь.
-
- На ней выбито:
-
- «ОБЪЕКТ 17».
-
- Рядом находится старый считыватель.
-
- Похоже, внутри есть электричество.`,
-
- [
-
-  {
-   text:"🚪 Попробовать открыть дверь",
-   action:openBunker
-  },
-
-  {
-   text:"🔍 Осмотреть механизм",
-   action:inspectBunker
-  },
-
-  {
-   text:"↩️ Уйти",
-   action:()=>travel("mine",30)
-  }
-
- ]);
-
-}
-
-
-function inspectBunker(){
-
- if(get("battery")>0)
-  log("Считыватель реагирует на батарею.");
- else
-  log("Механизм полностью обесточен.");
-
- advance(10);
-
- bunkerScene();
-
-}
-
-
-function openBunker(){
-
- if(get("battery")<1){
-
-  log("Для открытия нужна батарея.");
-
-  bunkerScene();
-
-  return;
-
- }
-
- remove("battery",1);
-
- advance(20);
-
- ending(
-  "🚪 ОБЪЕКТ №17",
-
-  `Дверь открывается.
-
-  Изнутри выходит тёплый воздух.
-
-  Свет.
-
-  Запасы.
-
-  Вода.
-
-  На стене висит карта.
-
-  На карте отмечены десятки
-  подобных объектов.
-
-  Ты понимаешь:
-
-  самолётная катастрофа была
-  далеко не единственным событием
-  в этой пустоши.
-
-  Твоя история только начинается.`
- );
-
-}
-
-
-/* ================================
-   WOLF
-================================ */
-
-function wolf(){
-
- let armed=get("rifle")>0&&get("ammo")>0;
-
- show(
-  "🐺 ВОЛК",
-
-  `Из-за деревьев выходит волк.
-
-  Он смотрит прямо на тебя.
-
-  Расстояние — около десяти метров.
-
-  Он голоден.`,
-
-  [
-
-   {
-    text:"🔫 Выстрелить",
-    disabled:!armed,
-    action:shoot
-   },
-
-   {
-    text:"🔥 Использовать огонь",
-    disabled:!game.fire,
-    action:scare
-   },
-
-   {
-    text:"🔪 Защититься ножом",
-    action:knifeFight
-   },
-
-   {
-    text:"🏃 Бежать",
-    action:run
-   }
-
-  ]
- );
-
-}
-
-
-function shoot(){
-
- remove("ammo",1);
-
- advance(5);
-
- if(Math.random()<.85){
-
-  add("meat",2);
-
-  log("Ты отпугнул волка выстрелом.");
-
-  scene();
-
- }else{
-
-  game.hp-=25;
-
-  log("Ты промахнулся. Волк атаковал.");
-
-  deathCheck();
-
-  if(game.hp>0)scene();
-
- }
-
-}
-
-
-function scare(){
-
- advance(5);
-
- if(Math.random()<.8){
-
-  log("Волк испугался огня.");
-
-  scene();
-
- }else{
-
-  game.hp-=15;
-
-  log("Волк не отступает.");
-
-  deathCheck();
-
-  if(game.hp>0)scene();
-
- }
-
-}
-
-
-function knifeFight(){
-
- advance(7);
-
- if(Math.random()<.55){
-
-  log("Ты отбился ножом.");
-
-  add("meat",1);
-
-  scene();
-
- }else{
-
-  game.hp-=30;
-  game.bleeding=true;
-
-  log("Волк ранил тебя.");
-
-  deathCheck();
-
-  if(game.hp>0)scene();
-
- }
-
-}
-
-
-function run(){
-
- game.energy-=15;
-
- advance(12);
-
- if(Math.random()<.7){
-
-  log("Ты смог убежать.");
-
-  scene();
-
- }else{
-
-  game.hp-=20;
-
-  log("Волк настиг тебя.");
-
-  deathCheck();
-
-  if(game.hp>0)scene();
-
- }
-
-}
-
-
-/* ================================
-   FIRE
-================================ */
-
-function fire(){
-
- if(game.fire){
-
-  log("Костёр уже горит.");
-
-  scene();
-
-  return;
-
- }
-
- if(get("wood")<2){
-
-  log("Нужно 2 дрова.");
-
-  scene();
-
-  return;
-
- }
-
- if(get("matches")<1){
-
-  log("Нет спичек.");
-
-  scene();
-
-  return;
-
- }
-
- remove("wood",2);
- remove("matches",1);
-
- game.fire=true;
- game.fireTime=120;
- game.warmth=clamp(game.warmth+20,0,100);
-
- log("Ты развёл костёр.");
-
- advance(5);
-
- scene();
-
-}
-
-
-/* ================================
-   FOOD
-================================ */
-
-function eat(){
-
- if(get("cooked")>0){
-
-  remove("cooked",1);
-
-  game.hunger=clamp(game.hunger+65,0,100);
-
-  log("Ты съел жареное мясо.");
-
-  advance(4);
-
-  scene();
-
-  return;
-
- }
-
- if(get("canned")>0){
-
-  remove("canned",1);
-
-  game.hunger=clamp(game.hunger+35,0,100);
-
-  log("Ты съел консервы.");
-
-  advance(4);
-
-  scene();
-
-  return;
-
- }
-
- if(get("meat")>0){
-
-  remove("meat",1);
-
-  game.hunger=clamp(game.hunger+20,0,100);
-
-  log("Ты съел сырое мясо.");
-
-  advance(4);
-
-  scene();
-
-  return;
-
- }
-
- log("У тебя нет еды.");
-
- scene();
-
-}
-
-
-function drink(){
-
- if(get("water")<1){
-
-  log("У тебя нет воды.");
-
-  scene();
-
-  return;
-
- }
-
- remove("water",1);
-
- game.thirst=clamp(game.thirst+45,0,100);
-
- log("Ты выпил воду.");
-
- advance(3);
-
- scene();
-
-}
-
-
-/* ================================
-   SLEEP
-================================ */
-
-function sleep(hours){
-
- if(!locations[game.location].shelter&&!game.fire){
-
-  log("Здесь слишком холодно для сна.");
-
-  scene();
-
-  return;
-
- }
-
- let h=hours;
-
- game.energy=clamp(game.energy+h*12,0,100);
-
- log("Ты спал "+h+" часов.");
-
- advance(h*60);
-
- if(game.hp>0)scene();
-
-}
-
-
-/* ================================
-   HEAL
-================================ */
-
-function heal(){
-
- if(game.bleeding&&get("bandage")>0){
-
-  remove("bandage",1);
-
-  game.bleeding=false;
-  game.hp=clamp(game.hp+15,0,100);
-
-  log("Ты перевязал рану.");
-
-  advance(7);
-
-  scene();
-
-  return;
-
- }
-
- if(get("medicine")>0){
-
-  remove("medicine",1);
-
-  game.hp=clamp(game.hp+35,0,100);
-
-  log("Ты использовал медикаменты.");
-
-  advance(5);
-
-  scene();
-
-  return;
-
- }
-
- log("У тебя нет подходящих медикаментов.");
-
- scene();
-
-}
-
-
-/* ================================
-   TRAVEL
-================================ */
-
-function travel(to,minutes){
-
- if(!game.unlocked[to]){
-
-  log("Ты не знаешь дороги туда.");
-
-  scene();
-
-  return;
-
- }
-
- let from=game.location;
-
- log(
-  locations[from].name+
-  " → "+
-  locations[to].name
- );
-
- advance(minutes);
-
- if(game.hp<=0)return;
-
- game.location=to;
-
- if(Math.random()<.11){
-
-  wolf();
-
-  return;
-
- }
-
- scene();
-
-}
-
-
-/* ================================
-   INVENTORY
-================================ */
-
-function inventory(){
-
- let html="";
-
- Object.keys(items).forEach(id=>{
-
-  let count=get(id);
-
-  if(count<=0)return;
-
-  html+=`
-   <div class="item">
-    <b>${items[id].n}</b>
-    <span>×${count}</span>
-    <small>${items[id].d}</small>
-   </div>
-  `;
-
- });
-
- if(!html)
-  html="<div>Инвентарь пуст.</div>";
-
- document.getElementById("items").innerHTML=html;
-
- document.getElementById("inventory").style.display="flex";
-
-}
-
-
-/* ================================
-   MAP
-================================ */
-
-function map(){
-
- let html="";
-
- Object.keys(locations).forEach(id=>{
-
-  let l=locations[id];
-  let unlocked=game.unlocked[id];
-
-  html+=`
-   <button
-    ${unlocked?"":"disabled"}
-    onclick="closeModal('map');mapTravel('${id}')">
-
-    <b>${id===game.location?"📍 ":""}${l.name}</b><br>
-    <small>
-     ${unlocked?l.desc:"Неизвестная область"}
-    </small>
-
-   </button>
-  `;
-
- });
-
- document.getElementById("mapList").innerHTML=html;
-
- document.getElementById("map").style.display="flex";
-
-}
-
-
-function mapTravel(id){
-
- if(id===game.location){
-
-  scene();
-
-  return;
-
- }
-
- let distance={
-  crash:15,
-  road:20,
-  cabin:25,
-  lake:35,
-  station:45,
-  village:50,
-  mine:45,
-  tower:60,
-  bunker:65
- }[id]||30;
-
- travel(id,distance);
-
-}
-
-
-/* ================================
-   CRAFT
-================================ */
-
-function craft(){
-
- let recipes=[
-
-  {
-   name:"🔥 Костёр",
-   req:"2 дрова + 1 спичка",
-   can:get("wood")>=2&&get("matches")>=1,
-   fn:fire
-  },
-
-  {
-   name:"🩹 Бинт",
-   req:"2 ткани",
-   can:get("cloth")>=2,
-   fn:()=>{
-    remove("cloth",2);
-    add("bandage",1);
-    log("Ты сделал бинт.");
-    advance(8);
-    craft();
-   }
-  },
-
-  {
-   name:"🍖 Жареное мясо",
-   req:"1 мясо + горящий костёр",
-   can:get("meat")>=1&&game.fire,
-   fn:()=>{
-    remove("meat",1);
-    add("cooked",1);
-    log("Ты приготовил мясо.");
-    advance(12);
-    craft();
-   }
-  },
-
-  {
-   name:"📻 Радиостанция",
-   req:"1 батарея + 2 металла",
-   can:get("battery")>=1&&get("scrap")>=2,
-   fn:()=>{
-    remove("battery",1);
-    remove("scrap",2);
-    add("radio",1);
-    log("Радиостанция отремонтирована.");
-    closeModal("craft");
-   }
-  }
-
- ];
-
- let html="";
-
- recipes.forEach(r=>{
-
-  html+=`
-   <div class="recipe">
-    <b>${r.name}</b>
-    <small>${r.req}</small>
-    <button
-     ${r.can?"":"disabled"}
-     onclick="craftAction(${recipes.indexOf(r)})">
-     Создать
-    </button>
-   </div>
-  `;
-
- });
-
- window.currentRecipes=recipes;
-
- document.getElementById("recipes").innerHTML=html;
-
- document.getElementById("craft").style.display="flex";
-
-}
-
-
-function craftAction(index){
-
- window.currentRecipes[index].fn();
-
-}
-
-
-/* ================================
-   ITEMS
-================================ */
-
-function get(id){
-
- return game.inventory[id]||0;
-
-}
-
-
-function add(id,n=1){
-
- game.inventory[id]=(game.inventory[id]||0)+n;
-
-}
-
-
-function remove(id,n=1){
-
- game.inventory[id]=Math.max(
-  0,
-  (game.inventory[id]||0)-n
- );
-
-}
-
-
-function unlock(id){
-
- if(!game.unlocked[id]){
-
-  game.unlocked[id]=true;
-
-  log(
-   "Новая область: "+
-   locations[id].name
-  );
-
- }
-
-}
-
-
-/* ================================
-   ENDINGS
-================================ */
-
-function ending(title,text){
-
- document.getElementById("endingTitle")
-  .textContent=title;
-
- document.getElementById("endingText")
-  .textContent=text;
-
- document.getElementById("ending")
-  .style.display="flex";
-
- localStorage.setItem(
-  SAVE,
-  JSON.stringify(game)
- );
-
-}
-
-
-function closeModal(id){
-
- document.getElementById(id).style.display="none";
-
-}
-
-
-/* ================================
-   AUTO SAVE
-================================ */
 
 setInterval(()=>{
 
- if(game){
-
-  localStorage.setItem(
-   SAVE,
-   JSON.stringify(game)
-  );
-
- }
+    if(Math.random()<.22)
+        changeWeather();
 
 },30000);
 
 
-/* ================================
-   CONTINUE BUTTON
-================================ */
+/* =========================================================
+   СОСТОЯНИЕ
+========================================================= */
 
-if(localStorage.getItem(SAVE)){
+function clampStats(){
 
- document.getElementById("continue")
-  .style.display="block";
+    state.hp=Math.max(0,Math.min(100,state.hp));
+    state.hunger=Math.max(0,Math.min(100,state.hunger));
+    state.thirst=Math.max(0,Math.min(100,state.thirst));
+    state.energy=Math.max(0,Math.min(100,state.energy));
+    state.warmth=Math.max(0,Math.min(100,state.warmth));
+
+}
+
+function updateHUD(){
+
+    clampStats();
+
+    setStat("hp",state.hp);
+    setStat("food",state.hunger);
+    setStat("water",state.thirst);
+    setStat("energy",state.energy);
+    setStat("warm",state.warmth);
+
+}
+
+function setStat(id,value){
+
+    document.getElementById(id+"Text")
+        .textContent=Math.round(value);
+
+    document.getElementById(id+"Bar")
+        .style.width=value+"%";
 
 }
 
 
-/* ================================
-   KEYBOARD
-================================ */
+/* =========================================================
+   СЛУЧАЙНЫЕ СОБЫТИЯ
+========================================================= */
 
-document.addEventListener("keydown",e=>{
+function randomEncounter(){
 
- if(!game)return;
+    if(Math.random()>0.035) return;
 
- if(e.key==="i")
-  inventory();
+    const events=[
 
- if(e.key==="m")
-  map();
+        {
+            title:"ВОЛК ЗАМЕТИЛ ВАС",
+            text:"Впереди между деревьями показалась стая. Один волк отделился от остальных.",
+            type:"wolf"
+        },
 
- if(e.key==="c")
-  craft();
+        {
+            title:"СЛЕДЫ",
+            text:"На снегу видны свежие следы животного. Они уходят в лес.",
+            type:"tracks"
+        },
 
- if(e.key==="Escape"){
+        {
+            title:"ЗАБРОШЕННЫЙ ЯЩИК",
+            text:"У дороги лежит старый деревянный ящик.",
+            type:"loot"
+        },
 
-  document.querySelectorAll(".overlay")
-   .forEach(x=>x.style.display="none");
+        {
+            title:"МЕТЕЛЬ НАБИРАЕТ СИЛУ",
+            text:"Видимость резко ухудшается. Продолжать движение опасно.",
+            type:"storm"
+        }
 
- }
+    ];
 
-});
+    const e=events[Math.floor(Math.random()*events.length)];
 
+    document.getElementById("eventTitle").textContent=e.title;
+    document.getElementById("eventText").textContent=e.text;
+
+    document.getElementById("eventPanel").dataset.type=e.type;
+    document.getElementById("eventPanel").classList.add("open");
+
+}
+
+
+/* =========================================================
+   СОБЫТИЯ
+========================================================= */
+
+function eventAction(action){
+
+    const panel=document.getElementById("eventPanel");
+    const type=panel.dataset.type;
+
+    panel.classList.remove("open");
+
+    if(action==="leave") return;
+
+    if(type==="wolf"){
+
+        startCombat("Волк","🐺",100,14);
+
+    }
+
+    if(type==="loot"){
+
+        addItem("Консервы","🥫",1);
+
+        notify("НАЙДЕНО","Консервы");
+
+    }
+
+    if(type==="tracks"){
+
+        notify("СЛЕДЫ","Они ещё свежие.");
+
+    }
+
+    if(type==="storm"){
+
+        state.warmth-=10;
+        state.energy-=5;
+
+        updateHUD();
+
+    }
+
+}
+
+
+/* =========================================================
+   БОЙ
+========================================================= */
+
+function startCombat(name,icon,hp,distance){
+
+    state.combat={
+        name,
+        icon,
+        hp,
+        maxHp:hp,
+        distance
+    };
+
+    document.getElementById("enemyName").textContent=name.toUpperCase();
+    document.getElementById("animal").textContent=icon;
+
+    updateCombat();
+
+    document.getElementById("combatScreen")
+        .classList.add("open");
+
+    notify("ОПАСНОСТЬ",name.toUpperCase()+" НАПАДАЕТ");
+
+}
+
+function updateCombat(){
+
+    if(!state.combat) return;
+
+    document.getElementById("distance")
+        .textContent=Math.round(state.combat.distance);
+
+    document.getElementById("enemyHealth")
+        .style.width=
+        (state.combat.hp/state.combat.maxHp*100)+"%";
+
+    document.getElementById("combatHp")
+        .textContent=Math.round(state.hp);
+
+    document.getElementById("combatEnergy")
+        .textContent=Math.round(state.energy);
+
+}
+
+function attack(){
+
+    if(!state.combat) return;
+
+    if(state.energy<8){
+
+        notify("НЕТ СИЛ","Вы слишком устали.");
+
+        return;
+
+    }
+
+    state.energy-=8;
+
+    let damage=15+Math.random()*15;
+
+    if(state.combat.distance>8)
+        damage*=.55;
+
+    state.combat.hp-=damage;
+
+    state.combat.distance-=1.5;
+
+    document.getElementById("enemyState")
+        .textContent="Ранен";
+
+    updateCombat();
+    updateHUD();
+
+    if(state.combat.hp<=0){
+
+        victory();
+
+        return;
+
+    }
+
+    enemyAttack();
+
+}
+
+function dodge(){
+
+    if(!state.combat) return;
+
+    state.energy-=6;
+
+    const success=Math.random()<.65;
+
+    if(success){
+
+        state.combat.distance+=3;
+
+        document.getElementById("enemyState")
+            .textContent="Промахнулся!";
+
+        notify("УКЛОНЕНИЕ","Вы избежали атаки.");
+
+    }else{
+
+        state.hp-=10;
+
+        notify("УДАР","Вы получили травму.");
+
+    }
+
+    updateCombat();
+    updateHUD();
+
+}
+
+function enemyAttack(){
+
+    setTimeout(()=>{
+
+        if(!state.combat) return;
+
+        const chance=Math.random();
+
+        if(chance<.25){
+
+            state.combat.distance-=2;
+
+            document.getElementById("enemyState")
+                .textContent="Волк приближается!";
+
+        }else{
+
+            state.hp-=7+Math.random()*9;
+
+            notify("АТАКА ВОЛКА","Вы получили ранение.");
+
+        }
+
+        updateCombat();
+        updateHUD();
+
+        if(state.hp<=0){
+
+            document.getElementById("enemyState")
+                .textContent="Вы потеряли сознание.";
+
+        }
+
+    },500);
+
+}
+
+function useCombatItem(){
+
+    const food=state.inventory.find(i=>i.name==="Консервы");
+
+    if(food && food.count>0){
+
+        food.count--;
+        state.hunger+=25;
+        state.energy+=5;
+
+        notify("ЕДА","Вы съели консервы.");
+
+        updateHUD();
+
+    }else{
+
+        notify("ПУСТО","Подходящих предметов нет.");
+
+    }
+
+}
+
+function victory(){
+
+    const animal=state.combat.name;
+
+    state.combat=null;
+
+    document.getElementById("combatScreen")
+        .classList.remove("open");
+
+    addItem("Мясо", "🥩",1);
+
+    notify("ЖИВОТНОЕ ПОБЕЖДЕНО",animal);
+
+}
+
+
+/* =========================================================
+   ЛОКАЦИИ
+========================================================= */
+
+let previousLocation=null;
+
+function enterLocation(region,name){
+
+    previousLocation={
+        x:state.x,
+        y:state.y,
+        region:state.region
+    };
+
+    document.getElementById("interiorScreen")
+        .classList.add("open");
+
+    notify("ЛОКАЦИЯ",name);
+
+}
+
+function exitLocation(){
+
+    document.getElementById("interiorScreen")
+        .classList.remove("open");
+
+}
+
+
+/* =========================================================
+   ОСМОТР
+========================================================= */
+
+function inspect(title,text){
+
+    document.getElementById("genericTitle")
+        .textContent=title;
+
+    document.getElementById("genericBody")
+        .innerHTML=`
+        <p style="color:#b7bfbc;line-height:1.6">${text}</p>
+        <button
+            onclick="closeAll()"
+            style="
+            padding:12px 20px;
+            background:#222b2e;
+            border:1px solid #444">
+            ЗАКРЫТЬ
+        </button>
+        `;
+
+    document.getElementById("genericPanel")
+        .classList.add("open");
+
+}
+
+
+/* =========================================================
+   КОНТЕЙНЕРЫ
+========================================================= */
+
+function openContainer(name){
+
+    const lootPool=[
+
+        ["Консервы","🥫"],
+        ["Спички","🔥"],
+        ["Бинт","🩹"],
+        ["Вода","🫙"],
+        ["Патроны","🔸"],
+        ["Шерстяная шапка","🧢"],
+        ["Книга","📕"],
+        ["Кофе","☕"],
+        ["Факел","🕯️"],
+        ["Палка","🪵"]
+
+    ];
+
+    const amount=1+Math.floor(Math.random()*3);
+
+    let found=[];
+
+    for(let i=0;i<amount;i++){
+
+        const item=lootPool[
+            Math.floor(Math.random()*lootPool.length)
+        ];
+
+        found.push(item);
+
+        addItem(item[0],item[1],1);
+
+    }
+
+    document.getElementById("genericTitle")
+        .textContent=name.toUpperCase();
+
+    document.getElementById("genericBody")
+        .innerHTML=`
+
+        <div style="font-size:13px;color:#adb5b2;margin-bottom:15px">
+            Внутри:
+        </div>
+
+        ${found.map(x=>`
+            <div style="
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:12px;
+            background:#192125;
+            margin-bottom:6px">
+                <span style="font-size:27px">${x[1]}</span>
+                <span>${x[0]}</span>
+            </div>
+        `).join("")}
+
+        <button
+            onclick="closeAll()"
+            style="
+            width:100%;
+            padding:13px;
+            margin-top:10px;
+            background:#252e32;
+            border:1px solid #555">
+            ЗАКРЫТЬ
+        </button>
+        `;
+
+    document.getElementById("genericPanel")
+        .classList.add("open");
+
+}
+
+
+/* =========================================================
+   ИНВЕНТАРЬ
+========================================================= */
+
+function openInventory(){
+
+    renderInventory();
+
+    document.getElementById("inventory")
+        .classList.add("open");
+
+}
+
+function renderInventory(){
+
+    const grid=document.getElementById("inventoryGrid");
+
+    grid.innerHTML=state.inventory.map((item,index)=>`
+
+        <div class="item" onclick="useItem(${index})">
+
+            <div class="itemIcon">${item.icon}</div>
+
+            <div class="itemName">
+                ${item.name}
+            </div>
+
+            <div class="itemCount">
+                ×${item.count}
+            </div>
+
+        </div>
+
+    `).join("");
+
+}
+
+function useItem(index){
+
+    const item=state.inventory[index];
+
+    if(!item || item.count<=0) return;
+
+    if(item.name==="Консервы"){
+
+        item.count--;
+        state.hunger+=30;
+
+    }
+
+    else if(item.name==="Фляга" || item.name==="Вода"){
+
+        item.count--;
+        state.thirst+=35;
+
+    }
+
+    else if(item.name==="Бинт"){
+
+        item.count--;
+        state.hp+=25;
+
+    }
+
+    else if(item.name==="Кофе"){
+
+        item.count--;
+        state.energy+=20;
+
+    }
+
+    else{
+
+        notify(item.name,"Этот предмет сейчас нельзя использовать.");
+
+        return;
+
+    }
+
+    clampStats();
+    updateHUD();
+    renderInventory();
+
+}
+
+
+/* =========================================================
+   ДОБАВЛЕНИЕ ПРЕДМЕТОВ
+========================================================= */
+
+function addItem(name,icon,count){
+
+    let item=state.inventory.find(i=>i.name===name);
+
+    if(item){
+
+        item.count+=count;
+
+    }else{
+
+        state.inventory.push({
+            name,
+            icon,
+            count
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   КАРТА / ЖУРНАЛ
+========================================================= */
+
+function openMapInfo(){
+
+    document.getElementById("genericTitle")
+        .textContent="КАРТА";
+
+    document.getElementById("genericBody")
+        .innerHTML=`
+
+        <p>
+        <b>Регион:</b> ${state.region}
+        </p>
+
+        <p>
+        <b>Координаты:</b>
+        ${Math.round(state.x)} / ${Math.round(state.y)}
+        </p>
+
+        <p style="color:#aab3b0">
+        Стрелки или WASD позволяют непрерывно
+        перемещаться по территории.
+        </p>
+
+        <p style="color:#aab3b0">
+        Время проходит во время движения.
+        Погода, температура, животные и случайные
+        события меняются динамически.
+        </p>
+
+        `;
+
+    document.getElementById("genericPanel")
+        .classList.add("open");
+
+}
+
+function openJournal(){
+
+    document.getElementById("genericTitle")
+        .textContent="ЖУРНАЛ";
+
+    document.getElementById("genericBody")
+        .innerHTML=`
+
+        <h3>ЗАПИСКИ ВЫЖИВШЕГО</h3>
+
+        <p style="color:#adb5b2">
+        День 1.
+        </p>
+
+        <p style="color:#adb5b2;line-height:1.6">
+        Нужно найти безопасное место, воду,
+        еду и источник тепла.
+        Карта огромна. Не стоит тратить силы
+        без необходимости.
+        </p>
+
+        <hr style="border-color:#333">
+
+        <p>
+        ✓ Найти укрытие<br>
+        □ Развести костёр<br>
+        □ Найти рыболовную лунку<br>
+        □ Найти оружие<br>
+        □ Исследовать регион
+        </p>
+
+        `;
+
+    document.getElementById("genericPanel")
+        .classList.add("open");
+
+}
+
+
+/* =========================================================
+   УВЕДОМЛЕНИЯ
+========================================================= */
+
+let notificationTimer;
+
+function notify(title,text){
+
+    const n=document.getElementById("notification");
+
+    n.innerHTML=
+        `<b>${title}</b><br>
+        <span style="font-size:11px;color:#adb5b2">${text}</span>`;
+
+    n.classList.add("show");
+
+    clearTimeout(notificationTimer);
+
+    notificationTimer=setTimeout(()=>{
+        n.classList.remove("show");
+    },2500);
+
+}
+
+
+/* =========================================================
+   СЛУЧАЙНЫЕ ПОВСЕДНЕВНЫЕ ИЗМЕНЕНИЯ
+========================================================= */
+
+setInterval(()=>{
+
+    state.hunger-=.15;
+    state.thirst-=.25;
+    state.energy-=.1;
+
+    if(state.weather==="Метель")
+        state.warmth-=.35;
+    else
+        state.warmth-=.05;
+
+    passTime(5);
+
+    updateHUD();
+
+    saveGame();
+
+},10000);
+
+
+/* =========================================================
+   ЗАКРЫТЬ ОКНА
+========================================================= */
+
+function closeAll(){
+
+    document.querySelectorAll(".overlay")
+        .forEach(x=>x.classList.remove("open"));
+
+}
+
+
+/* =========================================================
+   СОХРАНЕНИЕ
+========================================================= */
+
+function saveGame(){
+
+    localStorage.setItem(
+        "sever_survival_save",
+        JSON.stringify(state)
+    );
+
+}
+
+function loadGame(){
+
+    const save=localStorage.getItem(
+        "sever_survival_save"
+    );
+
+    if(!save) return;
+
+    try{
+
+        const data=JSON.parse(save);
+
+        Object.assign(state,data);
+
+    }catch(e){}
+
+}
+
+
+/* =========================================================
+   СТАРТ
+========================================================= */
+
+loadGame();
+
+updateWorld();
+updateHUD();
+
+setTimeout(()=>{
+
+    notify(
+        "ВЫЖИВАНИЕ НАЧАЛОСЬ",
+        "Исследуйте территорию и найдите укрытие."
+    );
+
+},800);
+
+
+/* =========================================================
+   СВАЙПЫ НА ТЕЛЕФОНЕ
+========================================================= */
+
+let touchStartX=0;
+let touchStartY=0;
+
+document.addEventListener("touchstart",e=>{
+
+    if(e.touches.length!==1) return;
+
+    touchStartX=e.touches[0].clientX;
+    touchStartY=e.touches[0].clientY;
+
+},{passive:true});
+
+
+document.addEventListener("touchend",e=>{
+
+    if(e.changedTouches.length!==1) return;
+
+    const dx=e.changedTouches[0].clientX-touchStartX;
+    const dy=e.changedTouches[0].clientY-touchStartY;
+
+    if(Math.max(Math.abs(dx),Math.abs(dy))<35)
+        return;
+
+    if(Math.abs(dx)>Math.abs(dy)){
+
+        if(dx>0) move(1,0);
+        else move(-1,0);
+
+    }else{
+
+        if(dy>0) move(0,1);
+        else move(0,-1);
+
+    }
+
+},{passive:true});
 
 </script>
 
